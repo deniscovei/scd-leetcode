@@ -1,0 +1,307 @@
+SISTEME CONCURENTE S, I DISTRIBUITE
+Proiect
+Echipa: Alexandra Ion, Silvia Nistor, Corina Ulariu, Dorinel Filip, George Grosu,
+Bogdan Mocanu
+
+2025-2026
+
+Cuprins
+1 Cerint, ă
+
+2
+
+2 Context s, i motivat, ie
+
+2
+
+3 Detalii tehnice
+3.1 Reguli generale obligatorii . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+3.2 Module s, i funct, ionalităt, i . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+2
+2
+3
+
+4 Exemple de subiecte
+
+3
+
+5 Exemple de funct, ionalit, i avansate
+
+4
+
+6 Etape s, i notare
+6.1 Organizare generală . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+6.2 Structura proiectului . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+6.3 Milestone 1 – Alegerea proiectului (Deadline: 28 Noiembrie) . . . . . . . . . . . . . . . . . . .
+6.4 Milestone 2 – Prezentare intermediară (Deadline: 12 Decembrie) . . . . . . . . . . . . . . . .
+6.5 Milestone 3 – Aplicat, ia finală - 3 puncte (Deadline: 16 Ianuarie) . . . . . . . . . . . . . . . .
+
+4
+4
+5
+5
+5
+5
+
+7 Recomandări de implementare s, i testare
+
+6
+
+8 Reguli privind originalitatea s, i provenient, a rezolvărilor
+
+6
+
+SISTEME CONCURENTE S, I DISTRIBUITE
+
+Pagina 1 din 6
+
+1
+
+Cerint, ă
+
+În cadrul materiei Sisteme Concurente s, i Distribuite, fiecare student va dezvolta, sub forma unui proiect individual, o platformă web folosind tehnologii potrivite pentru un sistem concurent/distribuit cu performant, ă
+mare.
+
+2
+
+Context s, i motivat, ie
+
+Pe măsură ce aplicat, iile web devin tot mai complexe s, i utilizatorii cer performant, ă ridicată, sistemele distribuite s, i concurente devin esent, iale. Acestea permit procesarea simultană a unui număr mare de cereri,
+asigură scalabilitate s, i continuitate a serviciilor, precum s, i o gestionare eficientă a resurselor.
+Acest proiect are ca scop familiarizarea studentului cu tehnologiile specifice sistemelor distribuite: microservicii, containere, autentificare centralizată s, i ret, ele virtuale ı̂ntre servicii.
+Dezvoltarea unei platforme web performante va permite aplicarea practică a conceptelor prezentate ı̂n cadrul
+cursurilor s, i a laboratorarelor, oferind experient, ă ı̂n proiectarea, integrarea s, i testarea unor solut, ii robuste
+s, i scalabile.
+
+3
+
+Detalii tehnice
+
+3.1
+
+Reguli generale obligatorii
+
+Toate proiectele trebuie să respecte următoarele reguli generale:
+1. Autentificare s, i autorizare: Fiecare proiect va include o funct, ie de autorizare utilizând o tehnologie
+de Single Sign-On (SSO) precum OAuth sau SAML. Implementarea se va realiza prin intermediul
+unui microserviciu de autentificare (ex: Keycloak).
+2. Managementul rolurilor: Se va implementa o funct, ionalitate de gestionare a rolurilor (ex: administrator, editor, vizitator ), care va crea automat profilurile utilizatorilor ı̂n baza meta-datelor primite
+de la serviciul de autentificare.
+3. Baza de date: Fiecare proiect va cont, ine o bază de date destinată managementului s, i persistent, ei
+entităt, ilor s, i setărilor aplicat, iei. Integrarea bazei de date se va face prin intermediul unui ORM (ex:
+SQLAlchemy cu Flask sau Django).
+4. Livrarea proiectului: Proiectul va fi livrat sub forma unui set de servicii Docker care vor include
+toate componentele necesare (inclusiv date demonstrative, dacă este cazul), astfel ı̂ncât acesta să
+funct, ioneze out-of-the-box.
+5. Microservicii s, i containere: Pentru fiecare componentă dezvoltată de către student se va include
+codul sursă s, i fis, ierul Dockerfile necesar pentru compilarea imaginii microserviciului respectiv.
+6. Structura proiectului: Fiecare proiect va cuprinde cel put, in 5 componente, ment, inând un echilibru
+ı̂ntre solut, iile open-source s, i cele dezvoltate de student (minim 2 componente proprii).
+7. Stack Docker Swarm: Întreaga solut, ie va fi livrată sub forma unui stack Docker Swarm, ı̂n care
+fiecare componentă este definită ca un serviciu separat, configurat s, i descris ı̂n fis, ierul .yml.
+8. Interconectarea componentelor: Comunicarea dintre servicii se va realiza prin intermediul numelor
+de DNS generate de Docker. Aceste valori vor fi preluate prin variabile de mediu — nu se vor
+hardcoda ı̂n cod.
+9. Ret, ele s, i securitate: Ret, elele definite vor fi configurate astfel ı̂ncât fiecare serviciu să poată comunica
+doar cu serviciile cu care este interconectat.
+
+SISTEME CONCURENTE S, I DISTRIBUITE
+
+Pagina 2 din 6
+
+10. Replicare s, i testare: Cel put, in una dintre componentele dezvoltate de student trebuie să suporte
+replicare, având o interact, iune cu o funct, ie avansată. Funct, ionarea corectă va fi demonstrată prin
+unit test-uri relevante.
+Atent, ie! Lipsa implementării chiar s, i a unei singure reguli obligatorii va duce la acordarea punctajului 0
+pentru proiect.
+
+3.2
+
+Module s, i funct, ionalităt, i
+
+Fiecare proiect trebuie să expună cel put, in 5 module, dintre care:
+• 3 module sunt comune tuturor proiectelor:
+– Modul de autentificare;
+– Modul de profil utilizator (management-ul rolurilor);
+– Baza de date.
+• 2 module se vor stabili de comun acord cu coordonatorul proiectului, având ı̂n vedere că acestea
+trebuie să fie:
+– Funct, ionalităt, i avansate, cu implementări relevante pentru sisteme concurente sau distribuite;
+– Implementate conform bunelor practici din domeniul sistemelor concurente sau distribuite, inclusiv utilizând tehnologii s, i protocoale de comunicat, ie adecvate.
+
+4
+
+Exemple de subiecte
+
+Următoarele exemple respectă cerint, ele de arhitectură distribuită s, i pot fi folosite ca puncte de pornire
+pentru dezvoltarea proiectelor:
+• Platformă distribuită de IoT: Expune servicii de ingestie, stocare, analiză s, i vizualizare a datelor
+folosind un REST API. Sistemul gestionează fluxuri mari de date provenite de la dispozitive IoT s, i
+permite monitorizare ı̂n timp real.
+• Sistem distribuit de management al comenzilor s, i facturilor: Solut, ie pentru gestionarea comenzilor, facturilor s, i fluxurilor de aprobare ı̂ntr-o companie. Include servicii pentru managementul produselor, procesarea comenzilor, integrarea cu sisteme de plată s, i generarea de rapoarte de performant, ă.
+• Sistem de supraveghere video inteligent: Utilizează multiple surse video s, i procesează imagini ı̂n
+timp real, incluzând detect, ie de obiecte, analiză de comportament s, i alertare automată.
+• Sistem de management al unui parc de distract, ii: Gestionează client, ii, rezervările s, i planificarea/cozile la atract, ii, cu posibilităt, i de monitorizare a fluxurilor de vizitatori s, i gestionarea bugetelor
+s, i constrângerilor financiare.
+• Platformă distribuită de Food Delivery: Permite utilizatorilor să vizualizeze restaurantele disponibile ı̂n zona lor geografică s, i să plaseze comenzi online. Include servicii de geolocalizare (ex: Google
+Maps API), managementul comenzilor, catalogul produselor per restaurant s, i integrarea unui sistem
+de plăt, i securizat.
+• Platformă de organizare a evenimentelor: Permite organizatorilor să creeze s, i să gestioneze evenimente (concerte, piese de teatru, conferint, e), iar participant, ilor să se ı̂nscrie, să primească notificări
+automate s, i să descarce bilete PDF cu cod QR unic pentru validarea accesului.
+• Sistem de management al unei biblioteci: Permite rezervarea s, i urmărirea ı̂mprumuturilor de
+cărt, i, notificarea automată la expirarea termenelor s, i integrarea unui mecanism de căutare distribuită
+(ElasticSearch, OpenSearch, MeiliSearch) pentru acces rapid la resurse.
+
+SISTEME CONCURENTE S, I DISTRIBUITE
+
+Pagina 3 din 6
+
+5
+
+Exemple de funct, ionalit, i avansate
+
+Următoarele exemple de funct, ionalităt, i pot fi integrate ı̂n proiecte pentru a demonstra concepte de arhitecturi
+distribuite, scalabilitate s, i rezilient, ă a sistemelor:
+• Sistem de rate-limiting distribuit: Un vizitator va putea efectua cel mult X request-uri de un
+anumit tip ı̂ntr-un interval de timp definit. Filtrarea se va realiza ı̂ntr-o manieră distribuită pentru
+a proteja sistemul de atacuri de tip DoS, inclusiv atunci când cererile ajung pe noduri diferite din
+infrastructură.
+• Funct, ionalitate de caching: Se va implementa un mecanism de caching pentru a evita regenerarea
+completă a răspunsurilor recente, atâta timp cât acestea sunt ı̂ncă valide. Această abordare reduce
+latent, a s, i ı̂mbunătăt, es, te performant, a sistemului ı̂n condit, ii de trafic ridicat.
+• Sistem de monitorizare: Va permite unui sysop să urmărească ı̂n timp real:
+– tipurile de request-uri procesate de sistem;
+– răspunsurile generate (de succes sau de eroare);
+– starea generală a microserviciilor.
+Se recomandă integrarea cu solut, ii de observabilitate precum Prometheus, Grafana sau ELK Stack.
+• Generarea eficientă a rapoartelor folosind replicarea bazelor de date: Pentru a evita ı̂ncărcarea
+bazei de date principale, se vor crea read replicas peste care vor fi generate rapoarte utile. Acestea pot
+fi expuse printr-un modul dedicat de raportare sau API REST, asigurând performant, ă s, i consistent, ă.
+• Sistem asincron de management al plăt, ilor: Se va implementa un microserviciu robust care
+gestionează plăt, ile ı̂ntr-o manieră asincronă, integrând solut, ii externe precum Stripe sau PayPal.
+Comunicarea ı̂ntre servicii se poate realiza printr-un broker de mesaje (ex: RabbitMQ, Kafka).
+• Sistem de management al facturilor cu workeri replicat, i: Funct, ionalitatea va permite existent, a
+mai multor web workers care generează facturi ı̂n paralel. Fiecare factură va avea o serie s, i un număr
+unic, garantând lipsa duplicatelor sau a numerelor lipsă ı̂n cadrul unei serii.
+• Sistem de notificare: Utilizatorii vor primi automat email-uri sau push notifications bazate pe
+evenimente s, i condit, ii predefinite din sistem. Exemple:
+– pentru sisteme IoT – trimiterea de alerte când senzorii depăs, esc praguri normale;
+– notificări când un dispozitiv nu mai răspunde;
+– alerte la detectarea de anomalii ı̂n ret, ea.
+• Sistem de căutare rapidă: Modulul va permite utilizatorilor să efectueze căutări eficiente ı̂n cadrul
+platformei, gestionând volume mari de date. Rezultatele vor fi oferite rapid prin mecanisme de indexare
+optimizată, folosind solut, ii open-source precum ElasticSearch sau OpenSearch.
+
+6
+
+Etape s, i notare
+
+6.1
+
+Organizare generală
+
+• Subiectul s, i funct, ionalităt, ile proiectului se vor alege de comun acord cu asistentul de la laborator ı̂n
+săptămâna 8.
+• Specificat, iile finale ale proiectului vor fi redactate de către student s, i ı̂ncărcate pe Moodle până cel
+târziu ı̂n săptămâna 9 (Milestone 1: 28 Noiembrie). Acestea vor fi aprobate sau pot fi revizuite de
+către asistent până la următorul checkpoint.
+• Pentru Milestone-ul 2, studentul trebuie să participe la laborator cel put, in o dată ı̂n intervalul 28
+Noiembrie – 12 Decembrie, iar Milestone-ul 3 se va prezenta ı̂nainte de 16 Ianuarie.
+SISTEME CONCURENTE S, I DISTRIBUITE
+
+Pagina 4 din 6
+
+• Pentru fiecare milestone, asistentul va oferi un calificativ binar (ı̂ndeplinit/neı̂ndeplinit) t, inând cont
+de documentat, ia s, i codul sursă ı̂ncărcate s, i prezentate de către student până la data limită a
+milestone-ului.
+• Proiectul valorează 3,5 puncte din nota finală a materiei, dintre care 3 puncte se vor aloca pentru
+aplicat, ia dezvoltată, iar maxim 0.5 puncte (proport, ional cu punctajul obt, inut pentru aplicat, ie) pentru
+respectarea tuturor milestone-urilor.
+• Obt, inerea oricărei fract, ii din punctajul pentru respectarea tuturor milestone-urilor este condit, ionată
+de obt, inerea calificativului ı̂ndeplinit la toate cele 3 milestone-uri.
+• Punctajul obt, inut pentru aplicat, ie va fi stabilit ı̂n funct, ie de livrabilele prezentate s, i ı̂ncărcate pentru
+Milestone 3.
+Atent, ie! Orice modificare a temei sau a component, ei proiectului se poate face doar cu acordul asistentului responsabil s, i va fi notată ı̂n scris de către acesta.
+
+6.2
+
+Structura proiectului
+
+Proiectul se va desfăs, ura ı̂n trei milestone-uri. Un milestone este considerat ı̂ndeplinit dacă rezultatele
+aferente sunt:
+• Încărcate pe platforma Moodle;
+• Prezentate asistentului de laborator până la deadline-ul asociat.
+Atent, ie! Fiecare milestone este condit, ionat de ı̂ndeplinirea milestone-urilor precedente.
+
+6.3
+
+Milestone 1 – Alegerea proiectului (Deadline: 28 Noiembrie)
+
+Pentru acest milestone, studentul va:
+• Defini arhitectura solut, iei (containerele ce vor fi folosite);
+• Descrie funct, ionalităt, ile platformei ı̂ntr-un document PDF, conform discut, iilor din prima săptămână
+de proiect.
+
+6.4
+
+Milestone 2 – Prezentare intermediară (Deadline: 12 Decembrie)
+
+Această etapă presupune:
+• Implementarea a cel put, in 40% din aplicat, ie (funct, ionalităt, ile de bază – cele 3 obligatorii conform
+enunt, ului);
+• Integrarea componentelor folosind Docker Swarm;
+• Prezentarea stadiului proiectului pentru feedback intermediar.
+
+6.5
+
+Milestone 3 – Aplicat, ia finală - 3 puncte (Deadline: 16 Ianuarie)
+
+• Implementarea modulelor de bază (serviciul web cu funct, iile descrise ı̂n etapa 1) s, i prezentarea lor ca
+un Stack de servicii Docker Swarm care va include cel put, in un serviciu replicat s, i o bază de date
+– 1.2 puncte:
+– Implementarea interfet, ei respectând principiile REST API – 0.6 puncte;
+– Verificarea condit, iilor de consistent, ă a datelor – 0.35 puncte;
+– Implementarea s, i justificarea mijloacelor de control al accesului s, i de securitate – 0.25 puncte.
+• Implementarea primului modul avansat – 0.9 puncte;
+SISTEME CONCURENTE S, I DISTRIBUITE
+
+Pagina 5 din 6
+
+• Implementarea celui de-al doilea modul avansat – 0.9 puncte.
+Respectarea tuturor milestone-urilor: 0.5 puncte, proport, ional cu punctajul obt, inut pentru
+aplicat, ie (Dacă orice termen din cele 3 nu este respectat, aceste puncte nu vor fi acordate).
+Exemple:
+• Punctajul final pentru un proiect care obt, ine 2.8 puncte (din maxim 3) pentru aplicat, ie va fi: 2.8 +
+0.5 ∗ 2.8/3.0 = 3.26.
+• Un alt proiect, cu o aplicat, ie evaluată tot cu 2.8 puncte, dar ı̂n dezvoltarea căruia nu s-a respectat
+unul dintre milestone-uri, va fi notat cu 2.8 puncte, neacordându-se nicio fract, ie din cele 0.5 pentru
+respectarea milestone-urilor.
+
+7
+
+Recomandări de implementare s, i testare
+
+Găsit, i aici o serie de recomandări legate de implementarea s, i testarea proiectului:
+1. Folosit, i un repository privat de Git s, i dat, i commit-uri frecvent, pentru a vedea clar diferent, ele dintre
+iterat, iile de cod s, i pentru a avea o copie sigură pe care o putet, i recupera dacă at, i s, ters ceva din gres, eală
+sau dacă mas, ina pe care lucrat, i are probleme;
+2. Dacă folosit, i Python s, i Flask, interact, iunea cu baza de date se poate face cu SQLAlchemy. Alternativ,
+putet, i folosi Django sau orice altă tehnologie care mapează entităt, i din baza de date ı̂n structuri de
+cod.
+3. Pentru testarea API-ului s, i a funct, ionalităt, ilor implementate, se recomandă utilizarea Postman s, i a scripturilor automate de testare.
+
+8
+
+Reguli privind originalitatea s, i provenient, a rezolvărilor
+
+Proiectul trebuie să reprezinte exclusiv munca studentului! Echipa va aplica regulamentele ı̂n
+vigoare pentru situat, iile de fraudă / plagiat, pentru orice nerespectare a acestei reguli, incluzând, dar nelimitându-se la: copierea de la colegi (se aplică pentru toate persoanele implicate) sau din alte surse a unor
+părt, i din rezolvare, prezentarea ca rezultat personal a oricărei bucăt, i de cod provenită din alte surse necitate
+sau neaprobate ı̂n prealabil (site-uri web, alte persoane, cod generat folosit AI / LLM-uri etc.).
+
+SISTEME CONCURENTE S, I DISTRIBUITE
+
+Pagina 6 din 6
+
+

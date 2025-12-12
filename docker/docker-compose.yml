@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: scd_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - scd-network
+
+  backend:
+    build: ../backend
+    image: scd-backend:latest
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/scd_db
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: scd-realm
+      KEYCLOAK_CLIENT_ID: scd-client
+    depends_on:
+      - db
+    networks:
+      - scd-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/scd_db
+      KC_DB_USERNAME: user
+      KC_DB_PASSWORD: password
+      KC_DB_SCHEMA: public
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - scd-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - scd-network
+
+  worker:
+    build: ../worker
+    image: scd-worker:latest
+    environment:
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - rabbitmq
+    deploy:
+      replicas: 2
+    networks:
+      - scd-network
+
+volumes:
+  db_data:
+
+networks:
+  scd-network:
+    driver: overlay
