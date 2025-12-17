@@ -152,3 +152,74 @@ curl -v -H "Authorization: Bearer <TOKEN>" http://127.0.0.1:5000/profile
 < 
 {"email":"student@example.com","id":"fcd292cf-ac6f-4cc2-add9-d7b30a49d347","role":"student","username":"student_user"}
 ```
+
+---
+
+## 6. Adăugare Problemă (Admin)
+Adăugăm o problemă nouă folosind un token de administrator.
+
+**Generare Token Admin (Python):**
+```python
+import jwt
+# ... payload cu email="admin@example.com", role="admin" ...
+token = jwt.encode(payload, "secret", algorithm="HS256")
+```
+
+**Comandă:**
+```bash
+curl -v -H "Authorization: Bearer <ADMIN_TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "Sum of Two Numbers", "description": "Write a function that adds two numbers."}' \
+     http://127.0.0.1:5000/problems
+```
+
+**Rezultat:**
+```http
+*   Trying 127.0.0.1:5000...
+* Connected to 127.0.0.1 (127.0.0.1) port 5000
+> POST /problems HTTP/1.1
+> Host: 127.0.0.1:5000
+> User-Agent: curl/8.5.0
+> Accept: */*
+> Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+> Content-Type: application/json
+> Content-Length: 89
+> 
+< HTTP/1.1 201 CREATED
+< Server: Werkzeug/3.1.4 Python/3.9.25
+< Date: Wed, 17 Dec 2025 02:54:22 GMT
+< Content-Type: application/json
+< Content-Length: 94
+< Connection: close
+< 
+{"description":"Write a function that adds two numbers.","id":1,"title":"Sum of Two Numbers"}
+```
+
+---
+
+## 7. Verificare Adăugare Problemă
+Listăm din nou problemele pentru a confirma că cea nouă a fost adăugată.
+
+**Comandă:**
+```bash
+curl -v http://127.0.0.1:5000/problems
+```
+
+**Rezultat:**
+```http
+*   Trying 127.0.0.1:5000...
+* Connected to 127.0.0.1 (127.0.0.1) port 5000
+> GET /problems HTTP/1.1
+> Host: 127.0.0.1:5000
+> User-Agent: curl/8.5.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Server: Werkzeug/3.1.4 Python/3.9.25
+< Date: Wed, 17 Dec 2025 02:54:22 GMT
+< Content-Type: application/json
+< Content-Length: 96
+< Connection: close
+< 
+[{"description":"Write a function that adds two numbers.","id":1,"title":"Sum of Two Numbers"}]
+```
