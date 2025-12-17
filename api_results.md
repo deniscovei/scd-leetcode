@@ -223,3 +223,52 @@ curl -v http://127.0.0.1:5000/problems
 < 
 [{"description":"Write a function that adds two numbers.","id":1,"title":"Sum of Two Numbers"}]
 ```
+
+---
+
+## 8. Submitere Soluție (Student)
+Trimitem o soluție pentru evaluare. Aceasta va fi pusă în coada RabbitMQ și preluată de un worker.
+
+**Generare Token Student (Python):**
+```python
+import jwt
+# ... payload cu email="student@example.com", role="student" ...
+token = jwt.encode(payload, "secret", algorithm="HS256")
+```
+
+**Comandă:**
+```bash
+curl -v -H "Authorization: Bearer <STUDENT_TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"problem_id": 1, "code": "print(a + b)", "language": "python"}' \
+     http://127.0.0.1:5000/submit
+```
+
+**Rezultat API:**
+```http
+*   Trying 127.0.0.1:5000...
+* Connected to 127.0.0.1 (127.0.0.1) port 5000
+> POST /submit HTTP/1.1
+> Host: 127.0.0.1:5000
+> User-Agent: curl/8.5.0
+> Accept: */*
+> Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+> Content-Type: application/json
+> Content-Length: 63
+> 
+< HTTP/1.1 200 OK
+< Server: Werkzeug/3.1.4 Python/3.9.25
+< Date: Wed, 17 Dec 2025 03:05:13 GMT
+< Content-Type: application/json
+< Content-Length: 60
+< Connection: close
+< 
+{"message":"Submission received and queued for processing"}
+```
+
+**Loguri Worker (Verificare Procesare):**
+```
+scd-stack_worker.1... |  [x] Received submission: b'{"user_id": "...", "problem_id": 1, "code": "print(a + b)", "language": "python"}'
+scd-stack_worker.1... | Processing submission for problem 1...
+scd-stack_worker.1... |  [x] Done
+```

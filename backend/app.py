@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import pika
 from flask import Flask, jsonify, request
 from models import db, User, Problem
 import jwt
@@ -16,6 +17,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 KEYCLOAK_URL = os.getenv('KEYCLOAK_URL', 'http://keycloak:8080')
 REALM_NAME = os.getenv('KEYCLOAK_REALM', 'scd-realm')
 CLIENT_ID = os.getenv('KEYCLOAK_CLIENT_ID', 'scd-client')
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
+QUEUE_NAME = 'judge_queue'
 
 db.init_app(app)
 
@@ -111,6 +114,43 @@ def create_problem():
     db.session.commit()
     
     return jsonify(new_problem.to_dict()), 201
+
+@app.route('/submit', methods=['POST'])
+@token_required
+def submit_solution():
+    user = request.current_user
+    data = request.get_json()
+    
+    problem_id = data.get('problem_id')
+    code = data.get('code')
+    language = data.get('language')
+    
+    if not problem_id or not code:
+        return jsonify({'message': 'Missing problem_id or code'}), 400
+
+    submission = {
+        'user_id': user.to_dict()['id'],
+        'problem_id': problem_id,
+        'code': code,
+        'language': language
+    }
+    
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
+        channel = connection.channel()
+        channel.queue_declare(queue=QUEUE_NAME, durable=True)
+        
+        channel.basic_publish(
+            exchange='',
+            routing_key=QUEUE_NAME,
+            body=json.dumps(submission),
+            properties=pika.BasicProperties(
+                delivery_mode=2,  # make message persistent
+            ))
+        connection.close()
+        return jsonify({'message': 'Submission received and queued for processing'}), 200
+    except Exception as e:
+        return jsonify({'message': 'Error queuing submission', 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

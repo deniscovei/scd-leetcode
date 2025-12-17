@@ -2,10 +2,10 @@ import jwt
 import datetime
 
 payload = {
-    "email": "admin@example.com",
-    "preferred_username": "admin_user",
+    "email": "student@example.com",
+    "preferred_username": "student_user",
     "realm_access": {
-        "roles": ["admin"]
+        "roles": ["student"]
     },
     "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
 }
