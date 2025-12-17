@@ -25,6 +25,7 @@
         -   `GET /profile`: Vizualizare profil utilizator (protejat).
         -   `GET /problems`: Listare probleme.
         -   `POST /problems`: Adăugare problemă (doar Admin).
+        -   `POST /submit`: Trimitere soluție pentru evaluare (Student).
     -   Integrare middleware pentru validare token JWT (Keycloak).
 
 2.  **Worker Service (Python):**
@@ -76,3 +77,20 @@ Toate componentele sunt containerizate și definite într-un stack Docker Swarm.
     docker service ls
     docker service logs scd-stack_backend
     ```
+
+## Milestone-uri
+
+- [x] Milestone 1: Alegerea proiectului și definirea arhitecturii.
+- [x] Milestone 2: Implementare parțială (40%) și integrare Docker Swarm.
+- [ ] Milestone 3: Aplicația finală.
+
+## Testare API
+
+Rezultatele detaliate ale testării API-ului pot fi găsite în fișierul [api_results.md](api_results.md).
+
+Acesta include exemple de comenzi `curl` și răspunsurile serverului pentru:
+- Health Check
+- Inițializare Bază de Date
+- Autentificare (Student/Admin)
+- Management Probleme
+- Submitere Soluții (Procesare Asincronă)
