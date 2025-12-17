@@ -42,6 +42,7 @@ def token_required(f):
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
+            # Decode token without verification for simplicity
             data = jwt.decode(token, options={"verify_signature": False})
             
             # Sync user to local DB if not exists
