@@ -42,14 +42,6 @@ def token_required(f):
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
-            # In a real production app, you should cache the public key
-            # and verify the signature properly using the JWKS endpoint.
-            # For this project, we might decode without verification for simplicity 
-            # OR fetch the public key. Let's try to decode unverified first for the skeleton,
-            # but ideally we verify.
-            
-            # Decoding unverified to get payload (for role extraction demo)
-            # In production: verify=True with public key
             data = jwt.decode(token, options={"verify_signature": False})
             
             # Sync user to local DB if not exists
