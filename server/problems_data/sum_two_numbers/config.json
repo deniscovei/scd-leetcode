@@ -1,0 +1,10 @@
+{
+    "title": "Sum of Two Numbers",
+    "difficulty": "Easy",
+    "tags": "Math, Basic",
+    "time_limits": {
+        "python": 1.0,
+        "cpp": 0.5,
+        "java": 1.0
+    }
+}

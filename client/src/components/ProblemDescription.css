@@ -1,0 +1,60 @@
+.problem-description-content {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  line-height: 1.6;
+  color: #263238;
+}
+
+.problem-description-content h1,
+.problem-description-content h2,
+.problem-description-content h3,
+.problem-description-content h4,
+.problem-description-content h5,
+.problem-description-content h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.problem-description-content p {
+  margin-bottom: 16px;
+}
+
+.problem-description-content code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: #f6f8fa; /* Light grey background for code */
+  border-radius: 6px;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.problem-description-content pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.problem-description-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.problem-description-content ul,
+.problem-description-content ol {
+  padding-left: 2em;
+  margin-bottom: 16px;
+}
+
+.problem-description-content li {
+  margin-bottom: 0.25em;
+}
+
+.problem-description-content strong {
+  font-weight: 600;
+}

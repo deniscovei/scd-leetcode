@@ -1,96 +1,120 @@
-# SCD-LeetCode
+# LeetCode Clone
 
-## Structura Proiectului
+This project is a full-stack application that mimics the functionalities of LeetCode, allowing users to log in, view coding problems, and submit their solutions. The application is built using React with TypeScript for the frontend and Python with Flask for the backend.
 
-- `backend/`: Serviciul principal API (Python/Flask).
-- `worker/`: Serviciul de execuție a codului (Python).
-- `frontend/`: Interfața web (React).
-- `docker/`: Fișiere de configurare Docker și Docker Swarm.
+## Project Structure
 
-## Development Logs
+The project is divided into two main parts: the client and the server.
 
-### Milestone 2 - Prezentare Intermediară
+### Client
 
-#### 1. Stadiul Implementării (40%)
+The client is a React application structured as follows:
 
-În această etapă, au fost implementate funcționalitățile de bază și infrastructura necesară pentru rularea aplicației într-un mediu distribuit.
+- **public/index.html**: The main HTML file that serves as the entry point for the React application.
+- **src/components**: Contains reusable components for the application.
+  - **CodeEditor.tsx**: A component for writing and testing code.
+  - **Navbar.tsx**: A navigation bar for the application.
+  - **ProblemDescription.tsx**: Displays the details of a coding problem.
+- **src/pages**: Contains the main pages of the application.
+  - **Home.tsx**: The landing page of the application.
+  - **Login.tsx**: Handles user authentication.
+  - **ProblemPage.tsx**: Displays a specific coding problem and its functionalities.
+- **src/api/index.ts**: Contains functions for making API calls to the backend.
+- **src/App.tsx**: The main application component that sets up routing.
+- **src/index.tsx**: The entry point for the React application.
 
-**Componente Implementate:**
+### Server
 
-1.  **Backend API (Python/Flask):**
-    -   Configurare conexiune bază de date (PostgreSQL).
-    -   Modele de date definite: `User`, `Problem`.
-    -   Endpoint-uri de bază:
-        -   `GET /`: Health check.
-        -   `GET /profile`: Vizualizare profil utilizator (protejat).
-        -   `GET /problems`: Listare probleme.
-        -   `POST /problems`: Adăugare problemă (doar Admin).
-        -   `POST /submit`: Trimitere soluție pentru evaluare (Student).
-    -   Integrare middleware pentru validare token JWT (Keycloak).
+The server is a Flask application structured as follows:
 
-2.  **Worker Service (Python):**
-    -   Conectare la RabbitMQ.
-    -   Consumare mesaje din coada `judge_queue`.
-    -   Simulare procesare (sleep) și confirmare mesaj (ACK).
-    -   Configurat pentru replicare (2 replici în Docker Swarm).
+- **app/__init__.py**: Initializes the Flask application and sets up the application context.
+- **app/models**: Contains the data models for the application.
+  - **user.py**: Defines the user schema and methods for user-related operations.
+  - **problem.py**: Defines the problem schema and methods for problem-related operations.
+  - **submission.py**: Defines the submission schema and methods for handling code submissions.
+- **app/routes**: Contains the routes for the application.
+  - **auth.py**: Routes for user authentication.
+  - **problems.py**: Routes for handling problem-related requests.
+- **app/services**: Contains services for executing code submissions.
+  - **code_execution.py**: Functions for executing code submissions and returning results.
+- **app/utils/db.py**: Utility functions for database connection and operations.
+- **config.py**: Configuration settings for the Flask application.
+- **requirements.txt**: Lists the dependencies required for the Python backend.
+- **run.py**: The entry point for running the Flask application.
 
-3.  **Infrastructură (Docker Swarm):**
-    -   **PostgreSQL:** Bază de date unică pentru aplicație și Keycloak.
-    -   **Keycloak:** Server de identitate pentru autentificare/autorizare.
-    -   **RabbitMQ:** Broker de mesaje pentru comunicarea asincronă.
-    -   **Docker Compose:** Fișier `docker-compose.yml` complet pentru orchestrarea tuturor serviciilor.
+## Features
+- **Authentication**: JWT-based Login and Registration.
+- **Problems**: 
+    - List all problems.
+    - View problem details with examples.
+    - Problems are loaded from local JSON files in `server/problems_data/`.
+- **Code Execution**: Submit Python code and see the output (mock execution).
 
-#### 2. Integrare Docker Swarm
+## Adding Problems
+To add a new problem, create a JSON file in `server/problems_data/` with the following structure:
+```json
+{
+    "title": "Problem Title",
+    "description": "Problem Description",
+    "difficulty": "Easy",
+    "tags": "Tag1, Tag2",
+    "test_cases": [
+        {
+            "input": "arg1, arg2",
+            "output": "result"
+        }
+    ]
+}
+```
+Restart the server to load the new problem.
 
-Toate componentele sunt containerizate și definite într-un stack Docker Swarm.
+## Getting Started
 
-**Servicii definite:**
--   `db`: PostgreSQL 13.
--   `keycloak`: Keycloak 22.
--   `rabbitmq`: RabbitMQ 3 Management.
--   `backend`: Imagine custom `scd-backend`.
--   `worker`: Imagine custom `scd-worker` (replicat x2).
+### Prerequisites
 
-**Rețea:**
--   `scd-network`: Rețea de tip `overlay` pentru comunicarea între containere pe noduri diferite.
+- Node.js and npm for the client-side application.
+- Python and pip for the server-side application.
 
-#### 3. Pași pentru Rulare
+### Installation
 
-1.  **Build Imagini:**
-    ```bash
-    docker build -t scd-backend:latest ./backend
-    docker build -t scd-worker:latest ./worker
-    ```
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd leetcode-clone
+   ```
 
-2.  **Inițializare Swarm (dacă nu e deja):**
-    ```bash
-    docker swarm init
-    ```
+2. Set up the client:
+   ```
+   cd client
+   npm install
+   ```
 
-3.  **Deploy Stack:**
-    ```bash
-    docker stack deploy -c docker/docker-compose.yml scd-stack
-    ```
+3. Set up the server:
+   ```
+   cd server
+   pip install -r requirements.txt
+   ```
 
-4.  **Verificare:**
-    ```bash
-    docker service ls
-    docker service logs scd-stack_backend
-    ```
+### Running the Application
 
-## Milestone-uri
+1. Start the server:
+   ```
+   cd server
+   python run.py
+   ```
 
-- [x] Milestone 1: Alegerea proiectului și definirea arhitecturii.
-- [x] Milestone 2: Implementare parțială (40%) și integrare Docker Swarm.
-- [ ] Milestone 3: Aplicația finală.
+2. Start the client:
+   ```
+   cd client
+   npm start
+   ```
 
-## Testare API
+The application should now be running on `http://localhost:3000` for the client and `http://localhost:5000` for the server.
 
-Rezultatele detaliate ale testării API-ului pot fi găsite în fișierul [api_results.md](api_results.md).
+## Contributing
 
-Acesta include exemple de comenzi `curl` și răspunsurile serverului pentru:
-- Health Check
-- Inițializare Bază de Date
-- Autentificare (Student/Admin)
-- Management Probleme
-- Submitere Soluții (Procesare Asincronă)
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License.
