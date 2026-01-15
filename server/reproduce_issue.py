@@ -39,21 +39,40 @@ def test_run_endpoint():
 
     print("2. Calling API...")
     headers = {"Authorization": f"Bearer {token}"}
-    # Flask is running on port 5001 in container? 
-    # From docker-compose, server ports: "5001:5001". Inside container runs on 5001.
-    # If I run this script inside server container, I use localhost:5001.
-    url = "http://localhost:5001/api/problems/1/run"
     
-    # Payload for run? Need to check what it expects.
-    # Usually code and language.
+    # 1. Submit solution for Problem 1
+    submit_url = "http://localhost:5001/api/problems/1/submit"
+    code = """
+import json
+class Solution:
+    def twoSum(self, nums, target):
+        lookup = {}
+        for i, num in enumerate(nums):
+            if target - num in lookup:
+                return [lookup[target - num], i]
+            lookup[num] = i
+        return []
+"""
     payload = {
-        "code": "print('hello')",
-        "language": "python"
+        "language": "python",
+        "code": code
     }
+    print("   Submitting solution...")
+    submit_resp = requests.post(submit_url, json=payload, headers=headers)
+    print(f"   Submit Status: {submit_resp.status_code}")
+    print(f"   Submit Result: {submit_resp.text}")
 
-    resp = requests.post(url, json=payload, headers=headers)
-    print(f"   Response Status: {resp.status_code}")
-    print(f"   Response Body: {resp.text}")
+    # 2. Check problems list for status
+    import json
+    url = "http://localhost:5001/api/problems/"
+    
+    response = requests.get(url, headers=headers)
+    print(f"List Status: {response.status_code}")
+    # Find problem 1 status
+    problems = response.json()
+    for p in problems:
+        if p['id'] == 1:
+            print(f"   Problem 1 Status: {p.get('status')}")
 
 if __name__ == "__main__":
     test_run_endpoint()

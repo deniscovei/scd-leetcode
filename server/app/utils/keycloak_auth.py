@@ -15,6 +15,50 @@ keycloak_openid = KeycloakOpenID(
     client_secret_key=config.KEYCLOAK_CLIENT_SECRET
 )
 
+def get_user_from_request():
+    """
+    Helper to extract user from Authorization header if present.
+    Returns (user_id, username) or (None, None).
+    """
+    token = None
+    if 'Authorization' in request.headers:
+        auth_header = request.headers['Authorization']
+        if auth_header.startswith('Bearer '):
+             token = auth_header.split(" ")[1]
+    
+    if not token:
+        return None, None
+        
+    try:
+        token_info = keycloak_openid.introspect(token)
+        if not token_info.get('active'):
+             return None, None
+             
+        username = token_info.get('preferred_username')
+        if not username:
+             username = token_info.get('sub')
+             
+        email = token_info.get('email')
+        
+        session = get_session()
+        try:
+            user = session.query(User).filter_by(username=username).first()
+            if not user:
+                user = User(
+                    username=username,
+                    email=email if email else f"{username}@example.com",
+                    password="keycloak_managed"
+                )
+                session.add(user)
+                session.commit()
+                session.refresh(user)
+            return user.id, user.username
+        finally:
+            session.close()
+    except Exception as e:
+        print(f"Auth Check Error: {e}", file=sys.stderr)
+        return None, None
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):

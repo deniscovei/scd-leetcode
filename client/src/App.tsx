@@ -4,6 +4,8 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import AddProblem from './pages/AddProblem';
 import ProblemPage from './pages/ProblemPage';
+import Submissions from './pages/Submissions';
+import MyProblems from './pages/MyProblems';
 
 const App: React.FC = () => {
   return (
@@ -12,6 +14,8 @@ const App: React.FC = () => {
         <Navbar />
         <Switch>
           <Route path="/" exact component={Home} />
+          <Route path="/my-problems" component={MyProblems} />
+          <Route path="/submissions" component={Submissions} />
           <Route path="/add-problem" component={AddProblem} />
           <Route path="/edit-problem/:id" component={AddProblem} />
           <Route path="/problems/:id" component={ProblemPage} />

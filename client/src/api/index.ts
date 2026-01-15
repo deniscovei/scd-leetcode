@@ -71,4 +71,14 @@ export const fetchSubmissions = async (problemId: string | number) => {
     return response.data;
 };
 
+export const fetchAllSubmissions = async () => {
+    const response = await api.get('/problems/submissions');
+    return response.data;
+};
+
+export const fetchMyProblems = async () => {
+    const response = await api.get('/problems/my');
+    return response.data;
+};
+
 export default api;

@@ -22,6 +22,12 @@ const Navbar: React.FC = () => {
                 {isLoggedIn ? (
                     <>
                         <li style={styles.menuItem}>
+                            <Link to="/submissions" style={styles.link}>Submission History</Link>
+                        </li>
+                        <li style={styles.menuItem}>
+                            <Link to="/my-problems" style={styles.link}>My Problems</Link>
+                        </li>
+                        <li style={styles.menuItem}>
                             <Link to="/add-problem" style={styles.link}>Add Problem</Link>
                         </li>
                         <li style={styles.menuItem}>

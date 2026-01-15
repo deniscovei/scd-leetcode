@@ -1,31 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchProblems } from '../api';
+import { fetchMyProblems } from '../api';
 import keycloak from '../keycloak';
 
-const Home: React.FC = () => {
+const MyProblems: React.FC = () => {
     const [problems, setProblems] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadProblems = async () => {
              try {
-                 const data = await fetchProblems();
+                 const data = await fetchMyProblems();
                  setProblems(data);
              } catch (e) {
                  console.error(e);
+             } finally {
+                 setLoading(false);
              }
         };
-        loadProblems();
+        if (keycloak.authenticated) {
+            loadProblems();
+        }
     }, []);
+    
+    // Check if user is admin - very basic check, ideally roles should be used.
+    // However, backend filters correctly, so we just display what we get.
+    // If admin, this list will contain ALL problems.
+    // If user, only theirs.
+    
+    const isAdmin = keycloak.tokenParsed?.preferred_username === 'admin';
+    const title = isAdmin ? "All Problems (Admin View)" : "My Problems";
 
-    const userId = keycloak.tokenParsed?.sub;
-    const username = keycloak.tokenParsed?.preferred_username;
-    // VERY Basic admin check - in real app check roles
-    const isAdmin = username === 'admin';
+    if (loading) return <div style={{ padding: '20px' }}>Loading...</div>;
 
     return (
         <div style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px' }}>
-            <h1 style={{ marginBottom: '20px', color: '#262626' }}>Problems</h1>
+            <h1 style={{ marginBottom: '20px', color: '#262626' }}>{title}</h1>
             <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
@@ -38,23 +48,9 @@ const Home: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {problems.map((p, index) => {
-                            const showEdit = isAdmin || (typeof p.owner_id === 'number' && typeof userId === 'string' && 
-                                // Need to check how ids are returned (often keycloak 'sub' is UUID string, but database might use integer IDs)
-                                // In this app: User table uses integer ID. 
-                                // Problem.owner_id is integer.
-                                // But 'userId' from keycloak 'sub' is UUID string.
-                                // We cannot easily match them without storing keycloak ID in DB or fetching current user integer ID.
-                                // Wait, the Auth logic in backend maps keycloak 'sub' to 'User' via 'username'.
-                                // We don't have the integer user ID in the frontend easily unless we fetch '/auth/me' or similar.
-                                // BUT: 'admin' username check is reliable for admin.
-                                // For regular user, we can check p.owner_username == username
-                                p.owner_username === username
-                            );
-                            
-                            return (
+                        {problems.map((p, index) => (
                             <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '15px', color: '#888' }}>{index + 1}</td>
+                                <td style={{ padding: '15px', color: '#888' }}>{p.id}</td>
                                 <td style={{ padding: '15px' }}>
                                     <Link to={`/problems/${p.id}`} style={{ color: '#2c3e50', fontWeight: '500' }}>
                                         {p.title}
@@ -62,6 +58,11 @@ const Home: React.FC = () => {
                                     <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
                                         {p.tags}
                                     </div>
+                                    {isAdmin && (
+                                        <div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>
+                                            Owner: {p.owner_username || `ID: ${p.owner_id}`}
+                                        </div>
+                                    )}
                                 </td>
                                 <td style={{ padding: '15px' }}>
                                     <span style={{ 
@@ -85,22 +86,20 @@ const Home: React.FC = () => {
                                     )}
                                 </td>
                                 <td style={{ padding: '15px' }}>
-                                    {showEdit && (
-                                        <Link to={`/edit-problem/${p.id}`} style={{ 
-                                            padding: '6px 12px', 
-                                            backgroundColor: '#ff9800', 
-                                            color: 'white', 
-                                            textDecoration: 'none', 
-                                            borderRadius: '4px', 
-                                            fontSize: '14px' 
-                                        }}>
-                                            Edit
-                                        </Link>
-                                    )}
+                                    {/* Edit button is always available here because this is "My Problems" or Admin view */}
+                                    <Link to={`/edit-problem/${p.id}`} style={{ 
+                                        padding: '6px 12px', 
+                                        backgroundColor: '#ff9800', 
+                                        color: 'white', 
+                                        textDecoration: 'none', 
+                                        borderRadius: '4px', 
+                                        fontSize: '14px' 
+                                    }}>
+                                        Edit
+                                    </Link>
                                 </td>
                             </tr>
-                        );
-                        })}
+                        ))}
                     </tbody>
                 </table>
                 {problems.length === 0 && (
@@ -113,5 +112,4 @@ const Home: React.FC = () => {
     );
 };
 
-
-export default Home;
+export default MyProblems;

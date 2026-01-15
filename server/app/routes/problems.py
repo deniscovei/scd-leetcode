@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, g
-from app.utils.keycloak_auth import token_required
+from app.utils.keycloak_auth import token_required, get_user_from_request
 from sqlalchemy import desc
 from app.models.problem import Problem
 from app.models.submission import Submission
@@ -15,7 +15,39 @@ def get_problems():
     session = get_session()
     try:
         problems = session.query(Problem).all()
-        return jsonify([problem.to_dict() for problem in problems]), 200
+        problems_list = [problem.to_dict() for problem in problems]
+
+        # Check for optional user auth to populate status
+        user_id, _ = get_user_from_request()
+        if user_id:
+            # Get all submissions for this user
+            submissions = session.query(Submission).filter_by(user_id=user_id).all()
+            
+            # Determine status for each problem
+            # If ANY submission is 'Accepted', status is 'Solved'
+            # Else if there are submissions, status is 'Attempted'
+            solved_problem_ids = set()
+            attempted_problem_ids = set()
+            
+            for sub in submissions:
+                if sub.status == 'Accepted':
+                    solved_problem_ids.add(sub.problem_id)
+                else:
+                    attempted_problem_ids.add(sub.problem_id)
+            
+            for p in problems_list:
+                p_id = p['id']
+                if p_id in solved_problem_ids:
+                    p['status'] = 'Solved'
+                elif p_id in attempted_problem_ids:
+                    p['status'] = 'Attempted'
+                else:
+                    p['status'] = 'Todo'
+        else:
+             for p in problems_list:
+                p['status'] = 'Todo'
+
+        return jsonify(problems_list), 200
     finally:
         session.close()
 
@@ -207,6 +239,73 @@ from typing import *
         return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+@problems_bp.route('/my', methods=['GET'])
+@token_required
+def get_my_problems():
+    session = get_session()
+    current_user_id = g.user_id
+    try:
+        # If user is admin (id=1), return all problems
+        if current_user_id == 1:
+            problems = session.query(Problem).all()
+        else:
+            problems = session.query(Problem).filter_by(owner_id=current_user_id).all()
+            
+        problems_list = [problem.to_dict() for problem in problems]
+        
+        # Calculate status as well
+        # Get all submissions for this user 
+        submissions = session.query(Submission).filter_by(user_id=current_user_id).all()
+        
+        solved_problem_ids = set()
+        attempted_problem_ids = set()
+        
+        for sub in submissions:
+            if sub.status == 'Accepted':
+                solved_problem_ids.add(sub.problem_id)
+            else:
+                attempted_problem_ids.add(sub.problem_id)
+        
+        for p in problems_list:
+            p_id = p['id']
+            if p_id in solved_problem_ids:
+                p['status'] = 'Solved'
+            elif p_id in attempted_problem_ids:
+                p['status'] = 'Attempted'
+            else:
+                 p['status'] = 'Todo'
+                 
+        return jsonify(problems_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+@problems_bp.route('/submissions', methods=['GET'])
+@token_required
+def get_all_submissions():
+    session = get_session()
+    current_user_id = g.user_id
+    try:
+        if current_user_id == 1:
+            # Admin sees all submissions, ordered by date desc
+            submissions = session.query(Submission).order_by(desc(Submission.created_at)).limit(100).all()
+        else:
+            # Regular user sees only their own
+            submissions = session.query(Submission).filter_by(user_id=current_user_id).order_by(desc(Submission.created_at)).all()
+            
+        # We need to join with Problem title and username for display
+        result = []
+        for sub in submissions:
+            sub_dict = sub.to_dict()
+            sub_dict['problem_title'] = sub.problem.title
+            sub_dict['username'] = sub.user.username
+            result.append(sub_dict)
+            
+        return jsonify(result), 200
     finally:
         session.close()
 
