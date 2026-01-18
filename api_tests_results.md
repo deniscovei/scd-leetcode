@@ -101,16 +101,20 @@ curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-conne
 curl -s -X GET "http://localhost:5001/api/problems/" | jq .
 ```
 
-**Expected Output:**
+**Actual Output:**
 ```json
 [
   {
     "id": 1,
     "title": "Two Sum",
-    "description": "Given an array of integers...",
     "difficulty": "Easy",
-    "tags": "Array, Hash Table",
-    "owner_id": 1,
+    "owner_username": "admin",
+    "status": "Todo"
+  },
+  {
+    "id": 3,
+    "title": "Added Problem",
+    "difficulty": "Hard",
     "owner_username": "admin",
     "status": "Todo"
   },
@@ -118,8 +122,6 @@ curl -s -X GET "http://localhost:5001/api/problems/" | jq .
     "id": 2,
     "title": "Sum of Two Numbers",
     "difficulty": "Easy",
-    "tags": "Math, Basic",
-    "owner_id": 1,
     "owner_username": "admin",
     "status": "Todo"
   },
@@ -127,9 +129,14 @@ curl -s -X GET "http://localhost:5001/api/problems/" | jq .
     "id": 4,
     "title": "Sum of Three Numbers",
     "difficulty": "Easy",
-    "tags": "Math, Basic",
-    "owner_id": 4,
     "owner_username": "denis",
+    "status": "Todo"
+  },
+  {
+    "id": 7,
+    "title": "Noua problema",
+    "difficulty": "Easy",
+    "owner_username": "user",
     "status": "Todo"
   }
 ]
@@ -138,21 +145,26 @@ curl -s -X GET "http://localhost:5001/api/problems/" | jq .
 ### 3.2 GET /api/problems/{id} - Get Single Problem
 
 ```bash
-curl -s -X GET "http://localhost:5001/api/problems/1" | jq .
+TOKEN=$(curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=scd-leetcode-client&username=student&password=student" | jq -r .access_token)
+
+curl -s -X GET "http://localhost:5001/api/problems/1" \
+  -H "Authorization: Bearer $TOKEN" | jq .
 ```
 
-**Expected Output:**
+**Actual Output:**
 ```json
 {
   "id": 1,
   "title": "Two Sum",
-  "description": "Given an array of integers `nums`...",
+  "description": "Given an array of integers `nums` and an integer `target`, return indices of the **two numbers** such that they add up to `target`...",
   "difficulty": "Easy",
   "tags": "Array, Hash Table",
-  "test_cases": "[...]",
-  "templates": "{...}",
-  "drivers": "{...}",
-  "time_limits": "{...}",
+  "test_cases": "[{\"input\": \"[2,7,11,15]\\n9\", \"output\": \"[0,1]\"}, ...]",
+  "templates": "{\"python\": \"class Solution:\\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\\n        pass\", ...}",
+  "drivers": "{\"python\": \"...\", \"java\": \"...\", \"cpp\": \"...\"}",
+  "time_limits": "{\"python\": 2.0, \"cpp\": 1.0, \"java\": 1.5}",
   "owner_id": 1,
   "owner_username": "admin"
 }
@@ -289,18 +301,28 @@ curl -s -X GET "http://localhost:5001/api/problems/submissions" \
   -H "Authorization: Bearer $TOKEN" | jq .
 ```
 
-**Expected Output:**
+**Actual Output:**
 ```json
 [
   {
-    "id": 6,
-    "user_id": 3,
-    "username": "student",
+    "id": 11,
+    "user_id": 1,
+    "username": "admin",
     "problem_id": 1,
     "problem_title": "Two Sum",
-    "status": "Accepted",
+    "status": "Wrong Answer",
     "language": "python",
-    "created_at": "2026-01-18T16:48:33.002039"
+    "created_at": "2026-01-18T20:32:23.868301"
+  },
+  {
+    "id": 10,
+    "user_id": 1,
+    "username": "admin",
+    "problem_id": 2,
+    "problem_title": "Sum of Two Numbers",
+    "status": "Runtime Error",
+    "language": "python",
+    "created_at": "2026-01-18T19:59:55.267665"
   }
 ]
 ```
@@ -315,16 +337,16 @@ curl -s -X GET "http://localhost:5001/api/problems/submissions" \
 curl -s -X GET "http://localhost:5001/api/problems/ranking" | jq .
 ```
 
-**Expected Output:**
+**Actual Output:**
 ```json
 [
   {
     "rank": 1,
-    "user_id": 2,
-    "username": "denis",
-    "solved_problems": 1,
-    "total_submissions": 3,
-    "acceptance_rate": 33.3
+    "user_id": 5,
+    "username": "user",
+    "solved_problems": 2,
+    "total_submissions": 4,
+    "acceptance_rate": 50.0
   },
   {
     "rank": 2,
@@ -336,11 +358,19 @@ curl -s -X GET "http://localhost:5001/api/problems/ranking" | jq .
   },
   {
     "rank": 3,
+    "user_id": 2,
+    "username": "denis",
+    "solved_problems": 1,
+    "total_submissions": 2,
+    "acceptance_rate": 50.0
+  },
+  {
+    "rank": 4,
     "user_id": 3,
     "username": "student",
     "solved_problems": 0,
-    "total_submissions": 2,
-    "acceptance_rate": 0.0
+    "total_submissions": 0,
+    "acceptance_rate": 0
   }
 ]
 ```
@@ -366,7 +396,7 @@ PONG
 curl -s -X GET "http://localhost/api/problems/" | jq '.[0].title'
 ```
 
-**Expected Output:**
+**Actual Output:**
 ```
 "Two Sum"
 ```
