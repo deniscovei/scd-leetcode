@@ -1,0 +1,14 @@
+# Sum of Three Numbers
+
+Given three integers `a`, `b`, and `c`, return their sum.
+
+## Example 1
+**Input:** `a = 1`, `b = 2`, `c = 3`
+**Output:** `6`
+
+## Example 2
+**Input:** `a = -1`, `b = 5`, `c = 10`
+**Output:** `14`
+
+## Constraints
+- `-1000 <= a, b, c <= 1000`

@@ -1,0 +1,10 @@
+{
+    "title": "Added Problem",
+    "difficulty": "Hard",
+    "tags": "Math",
+    "time_limits": {
+        "python": 2,
+        "cpp": 1,
+        "java": 2
+    }
+}

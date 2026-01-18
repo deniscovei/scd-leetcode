@@ -1,7 +1,14 @@
 import os
 import json
 from app.models.problem import Problem
+from app.models.user import User
 from app.utils.db import get_session
+
+# Mapping of problem folders to owner usernames
+PROBLEM_OWNERS = {
+    'sum_three_numbers': 'denis',
+    # Default: admin owns all other problems
+}
 
 def load_problems(app):
     session = get_session()
@@ -81,6 +88,12 @@ def load_problems(app):
                 drivers_str = json.dumps(drivers)
                 time_limits_str = json.dumps(config.get('time_limits', {}))
                 
+                # Determine owner based on folder name
+                folder_name = entry.name
+                owner_username = PROBLEM_OWNERS.get(folder_name, 'admin')
+                owner = session.query(User).filter_by(username=owner_username).first()
+                owner_id = owner.id if owner else 1  # Default to admin (id=1)
+                
                 # Check if problem exists
                 existing = session.query(Problem).filter_by(title=config['title']).first()
                 
@@ -93,10 +106,11 @@ def load_problems(app):
                         test_cases=test_cases_str,
                         templates=templates_str,
                         drivers=drivers_str,
-                        time_limits=time_limits_str
+                        time_limits=time_limits_str,
+                        owner_id=owner_id
                     )
                     session.add(problem)
-                    print(f"Added problem: {config['title']}")
+                    print(f"Added problem: {config['title']} (owner: {owner_username})")
                 else:
                     existing.description = description
                     existing.difficulty = config['difficulty']
@@ -105,6 +119,9 @@ def load_problems(app):
                     existing.templates = templates_str
                     existing.drivers = drivers_str
                     existing.time_limits = time_limits_str
+                    # Update owner only if not already set
+                    if not existing.owner_id:
+                        existing.owner_id = owner_id
                     print(f"Updated problem: {config['title']}")
         
         session.commit()

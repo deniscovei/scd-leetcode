@@ -1,6 +1,32 @@
 version: '3.8'
 
 services:
+  # API Gateway - Traefik
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8888:8080"  # Traefik Dashboard (changed from 8080)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - leetcode-network
+
+  # Queue Service - Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - leetcode-network
+
   db:
     image: postgres:13
     environment:
@@ -11,6 +37,8 @@ services:
       - "5433:5432"
     volumes:
       - ./data/db:/var/lib/postgresql/data
+    networks:
+      - leetcode-network
 
   server:
     build: ./server
@@ -21,21 +49,37 @@ services:
     environment:
       - FLASK_ENV=development
       - DATABASE_URL=postgresql://user:password@db:5432/leetcode_db
-      - RUNNER_URL=http://runner:5000/execute
+      - RUNNER_URL=http://traefik:80/execute
+      - REDIS_URL=redis://redis:6379/0
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       - db
-      - runner
+      - redis
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.server.rule=PathPrefix(`/api`)"
+      - "traefik.http.services.server.loadbalancer.server.port=5001"
+    networks:
+      - leetcode-network
 
+  # Code Runner Workers (scalable)
   runner:
     build: ./runner
-    ports:
-      - "5002:5000"
-    volumes:
-      - ./runner:/app
     environment:
       - FLASK_ENV=development
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    deploy:
+      replicas: 2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.runner.rule=PathPrefix(`/execute`)"
+      - "traefik.http.services.runner.loadbalancer.server.port=5000"
+    networks:
+      - leetcode-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.0
@@ -49,10 +93,11 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
-      # Host port changed to 8081 because 8080 is already in use on this machine
       - "8081:8080"
     depends_on:
       - db
+    networks:
+      - leetcode-network
 
   client:
     build: ./client
@@ -65,5 +110,18 @@ services:
     tty: true
     environment:
       - CHOKIDAR_USEPOLLING=true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client.rule=PathPrefix(`/`)"
+      - "traefik.http.services.client.loadbalancer.server.port=3000"
+    networks:
+      - leetcode-network
+
+networks:
+  leetcode-network:
+    driver: bridge
+
+volumes:
+  redis_data:
 
 

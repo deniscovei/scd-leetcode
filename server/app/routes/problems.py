@@ -309,6 +309,45 @@ def get_all_submissions():
     finally:
         session.close()
 
+@problems_bp.route('/ranking', methods=['GET'])
+def get_ranking():
+    """Get user ranking based on solved problems and total submissions."""
+    from app.models.user import User
+    session = get_session()
+    try:
+        users = session.query(User).all()
+        ranking = []
+        
+        for user in users:
+            # Count distinct solved problems (Accepted submissions)
+            solved_submissions = session.query(Submission).filter_by(
+                user_id=user.id, 
+                status='Accepted'
+            ).all()
+            solved_problem_ids = set(s.problem_id for s in solved_submissions)
+            
+            # Count total submissions
+            total_submissions = session.query(Submission).filter_by(user_id=user.id).count()
+            
+            ranking.append({
+                'user_id': user.id,
+                'username': user.username,
+                'solved_problems': len(solved_problem_ids),
+                'total_submissions': total_submissions,
+                'acceptance_rate': round(len(solved_problem_ids) / total_submissions * 100, 1) if total_submissions > 0 else 0
+            })
+        
+        # Sort by solved_problems desc, then by acceptance_rate desc
+        ranking.sort(key=lambda x: (-x['solved_problems'], -x['acceptance_rate']))
+        
+        # Add rank position
+        for i, r in enumerate(ranking):
+            r['rank'] = i + 1
+            
+        return jsonify(ranking), 200
+    finally:
+        session.close()
+
 @problems_bp.route('/', methods=['POST'])
 @token_required
 def create_problem():
@@ -464,7 +503,8 @@ def delete_problem(problem_id):
         if not problem:
             return jsonify({'error': 'Problem not found'}), 404
             
-        if problem.owner_id != current_user_id:
+        # Allow admin (id=1) or problem owner to delete
+        if problem.owner_id != current_user_id and current_user_id != 1:
              return jsonify({'error': 'Unauthorized'}), 403
 
         title = problem.title

@@ -6,6 +6,8 @@ import AddProblem from './pages/AddProblem';
 import ProblemPage from './pages/ProblemPage';
 import Submissions from './pages/Submissions';
 import MyProblems from './pages/MyProblems';
+import MyAccount from './pages/MyAccount';
+import Ranking from './pages/Ranking';
 
 const App: React.FC = () => {
   return (
@@ -14,8 +16,10 @@ const App: React.FC = () => {
         <Navbar />
         <Switch>
           <Route path="/" exact component={Home} />
+          <Route path="/ranking" component={Ranking} />
           <Route path="/my-problems" component={MyProblems} />
           <Route path="/submissions" component={Submissions} />
+          <Route path="/my-account" component={MyAccount} />
           <Route path="/add-problem" component={AddProblem} />
           <Route path="/edit-problem/:id" component={AddProblem} />
           <Route path="/problems/:id" component={ProblemPage} />

@@ -1,0 +1,332 @@
+=== API ENDPOINT TESTS - Sun Jan 18 06:47:29 PM EET 2026 ===
+
+=== 1. SERVICE STATUS ===
+         Name                        Command               State                                     Ports                                   
+---------------------------------------------------------------------------------------------------------------------------------------------
+scd-leetcode_client_1     docker-entrypoint.sh npm start   Up      0.0.0.0:3000->3000/tcp,:::3000->3000/tcp                                  
+scd-leetcode_db_1         docker-entrypoint.sh postgres    Up      0.0.0.0:5433->5432/tcp,:::5433->5432/tcp                                  
+scd-leetcode_keycloak_1   /opt/keycloak/bin/kc.sh st ...   Up      0.0.0.0:8081->8080/tcp,:::8081->8080/tcp, 8443/tcp                        
+scd-leetcode_redis_1      docker-entrypoint.sh redis ...   Up      0.0.0.0:6379->6379/tcp,:::6379->6379/tcp                                  
+scd-leetcode_runner_1     python app.py                    Up      5000/tcp                                                                  
+scd-leetcode_runner_2     python app.py                    Up      5000/tcp                                                                  
+scd-leetcode_server_1     python run.py                    Up      0.0.0.0:5001->5001/tcp,:::5001->5001/tcp                                  
+scd-leetcode_traefik_1    /entrypoint.sh --api.insec ...   Up      0.0.0.0:80->80/tcp,:::80->80/tcp, 0.0.0.0:8888->8080/tcp,:::8888->8080/tcp
+
+=== 2.1 GET TOKEN (student) ===
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5MXhqT1g5c3V6V183d0hPcF9ZLUlRNlkydXFHR0ItZnluUXVmM3FSeklNIn0.eyJleHAiOjE3Njg3NTUxNjQsImlhdCI6MTc2ODc1NDg2NCwianRpIjoiNjY5MjM0YzQtMTkyNi00MDNhLThjMjAtYWJjMDU3NGY3MDI2IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9zY2QtbGVldGNvZGUiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiNTg4NmZhMTUtZDczMS00ODFjLTg1MTEtNTRkNjlhMzUzYzQzIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2NkLWxlZXRjb2RlLWNsaWVudCIsInNlc3Npb25fc3RhdGUiOiI1M2ZlYzNiZS0wY2VjLTRiYTEtOTEwNS04OTE5NjVjYjU4YzEiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJkZWZhdWx0LXJvbGVzLXNjZC1sZWV0Y29kZSIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwic2lkIjoiNTNmZWMzYmUtMGNlYy00YmExLTkxMDUtODkxOTY1Y2I1OGMxIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInByZWZlcnJlZF91c2VybmFtZSI6InN0dWRlbnQiLCJlbWFpbCI6InN0dWRlbnRAZXhhbXBsZS5jb20ifQ.dAY7-DiNytRh4a1rFPHk2t0jNUK6D_RcPSQGF-FtVZjtdUcHJX5uoaNeuSRm7vf4aAecg8QwOmLMb6uOhIAOjyOFqgSdPRTAWJU72dVKg8YI9ll2NZqnHQVQ33ChJ58onyw8_QtwPEGIIxQWwe5a9GF_N7QQjUZHbiJoj4gVpjCn968G4OPHjcvRon0RudsEmVKc3bGpUDnbaZHPaFtWv-rhZfHU_bBiC0RCQT3q29ek-ugXuc4NqnEUexlY9lJRQenFd2d6vyfSV80AGX-eJyQaTSDZI-HpKz7DH-bvMDKPQMK8XQlPqj2Dx8PVRqW0obHStPlwqVwRd0alHzFPpw",
+  "expires_in": 300,
+  "refresh_expires_in": 1800,
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1MThkY2YxMi05MTFkLTQwZjAtODJmOC1iNWEwYmQxOTBmZjUifQ.eyJleHAiOjE3Njg3NTY2NjQsImlhdCI6MTc2ODc1NDg2NCwianRpIjoiZmQ1YzhiYTEtZTcyMy00MDNkLTk0ZDEtZjRhZDFiOGI3ZTRiIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9zY2QtbGVldGNvZGUiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODEvcmVhbG1zL3NjZC1sZWV0Y29kZSIsInN1YiI6IjU4ODZmYTE1LWQ3MzEtNDgxYy04NTExLTU0ZDY5YTM1M2M0MyIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJzY2QtbGVldGNvZGUtY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6IjUzZmVjM2JlLTBjZWMtNGJhMS05MTA1LTg5MTk2NWNiNThjMSIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjUzZmVjM2JlLTBjZWMtNGJhMS05MTA1LTg5MTk2NWNiNThjMSJ9.3Dei79WRLuzweiI4krdtazMBDLW6MtMDGAGY3xHsgrY",
+  "token_type": "Bearer",
+  "not-before-policy": 0,
+  "session_state": "53fec3be-0cec-4ba1-9105-891965cb58c1",
+  "scope": "profile email"
+}
+
+=== 2.2 GET TOKEN (admin) ===
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5MXhqT1g5c3V6V183d0hPcF9ZLUlRNlkydXFHR0ItZnluUXVmM3FSeklNIn0.eyJleHAiOjE3Njg3NTUxNzIsImlhdCI6MTc2ODc1NDg3MiwianRpIjoiYjI4Y2RjOGQtYWUxNy00MWU3LWJhZTQtYzE1ZGU1ZDE5NWEzIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9zY2QtbGVldGNvZGUiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiZGUzZDI2Y2YtODNmOS00ZTU2LWJlZWQtNDhmNDRjZjA4ZjcyIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2NkLWxlZXRjb2RlLWNsaWVudCIsInNlc3Npb25fc3RhdGUiOiI4M2Y2MGE3OS0zZTZhLTQyMTgtOGJjZC0xODliMzliMmEzOWQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJkZWZhdWx0LXJvbGVzLXNjZC1sZWV0Y29kZSIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwic2lkIjoiODNmNjBhNzktM2U2YS00MjE4LThiY2QtMTg5YjM5YjJhMzlkIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInByZWZlcnJlZF91c2VybmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSJ9.IMb5QHebekZrpB5CIgdbgJRSLOMnXT_YW7RrOSJG9Nzcs85Btxj2Oo_fFRh5y2qr1kfP-7O26C_mrUPGwugqvNAfr6KYXAhBmtrCaBxGTvqv7Wvfg8hYQuQLFUYMWQob4YnnhCGa2HSKc9Sd2qmIgbTfo6MKyvcjn6a1v1oWKR1rB-L8StoDMaQXcrCKlcCVvATU-NoOAcmskKnwQrmRUxOvUExa9ZNNVBpAgLfOF6Z2SPYlwXzGtrLceV9eKNSBd8domyS7ImUwLDf6Wv0Ghq7o9Rs0HbQ2V-6PDq6yeXVhcYH8mtkIU-jstXpbNWvzxnvmGMsvdCXXMgWhSH7mhw",
+  "expires_in": 300,
+  "refresh_expires_in": 1800,
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1MThkY2YxMi05MTFkLTQwZjAtODJmOC1iNWEwYmQxOTBmZjUifQ.eyJleHAiOjE3Njg3NTY2NzIsImlhdCI6MTc2ODc1NDg3MiwianRpIjoiNDdkZTUwNDEtMDY5ZS00YmY3LWIyZjAtMDBkZDgyNmI0MzdhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9zY2QtbGVldGNvZGUiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODEvcmVhbG1zL3NjZC1sZWV0Y29kZSIsInN1YiI6ImRlM2QyNmNmLTgzZjktNGU1Ni1iZWVkLTQ4ZjQ0Y2YwOGY3MiIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJzY2QtbGVldGNvZGUtY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6IjgzZjYwYTc5LTNlNmEtNDIxOC04YmNkLTE4OWIzOWIyYTM5ZCIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjgzZjYwYTc5LTNlNmEtNDIxOC04YmNkLTE4OWIzOWIyYTM5ZCJ9.J7Y2fSTeR3yZWgAXPu4aTne8xdFJv5PNgIHgo_c0VOk",
+  "token_type": "Bearer",
+  "not-before-policy": 0,
+  "session_state": "83f60a79-3e6a-4218-8bcd-189b39b2a39d",
+  "scope": "profile email"
+}
+
+=== 3.1 GET /api/problems/ (public) ===
+[
+  {
+    "description": "Given an array of integers `nums` and an integer `target`, return indices of the **two numbers** such that they add up to `target`.\n\nYou may assume that each input would have **exactly one solution**, and you may not use the same element twice.\n\nYou can return the answer in any order.\n\n**Example 1:**\n- **Input:** nums = [2,7,11,15], target = 9\n- **Output:** [0,1]\n- **Explanation:** Because nums[0] + nums[1] == 9, we return [0, 1].\n\n**Example 2:**\n- **Input:** nums = [3,2,4], target = 6\n- **Output:** [1,2]\n\n**Example 3:**\n- **Input:** nums = [3,3], target = 6\n- **Output:** [0,1]\n",
+    "difficulty": "Easy",
+    "drivers": "{\"python\": \"\\nif __name__ == '__main__':\\n    lines = sys.stdin.read().split('\\\\n')\\n    lines = [l.strip() for l in lines if l.strip()]\\n    if len(lines) >= 2:\\n        nums = json.loads(lines[0])\\n        target = int(lines[1])\\n        sol = Solution()\\n        result = sol.twoSum(nums, target)\\n        print(json.dumps(result))\", \"java\": \"class Driver {\\n    public static void main(String[] args) {\\n        Scanner scanner = new Scanner(System.in);\\n        if(scanner.hasNextLine()) {\\n            String line1 = scanner.nextLine().trim();\\n            String line2 = scanner.hasNextLine() ? scanner.nextLine().trim() : \\\"\\\";\\n            if(line1.length() > 2) line1 = line1.substring(1, line1.length()-1);\\n            String[] parts = line1.split(\\\",\\\");\\n            int[] nums = new int[parts.length];\\n            for(int i=0; i<parts.length; i++) {\\n                if(!parts[i].trim().isEmpty()) nums[i] = Integer.parseInt(parts[i].trim());\\n            }\\n            int target = Integer.parseInt(line2);\\n            Solution sol = new Solution();\\n            int[] res = sol.twoSum(nums, target);\\n            System.out.print(\\\"[\\\");\\n            for(int i=0; i<res.length; i++) {\\n                System.out.print(res[i]);\\n                if(i < res.length - 1) System.out.print(\\\",\\\");\\n            }\\n            System.out.print(\\\"]\\\");\\n        }\\n    }\\n}\", \"cpp\": \"int main() {\\n    string line1, line2;\\n    if(getline(cin, line1) && getline(cin, line2)) {\\n        // Parse nums\\n        if(line1.size() > 2) {\\n            line1 = line1.substr(1, line1.size() - 2);\\n        }\\n        stringstream ss(line1);\\n        string item;\\n        vector<int> nums;\\n        while (getline(ss, item, ',')) {\\n            if(!item.empty()) nums.push_back(stoi(item));\\n        }\\n        int target = stoi(line2);\\n        Solution sol;\\n        vector<int> res = sol.twoSum(nums, target);\\n        cout << \\\"[\\\";\\n        for(int i=0; i<res.size(); ++i) {\\n            cout << res[i];\\n            if(i < res.size()-1) cout << \\\",\\\";\\n        }\\n        cout << \\\"]\\\";\\n    }\\n    return 0;\\n}\"}",
+    "id": 1,
+    "owner_id": 1,
+    "owner_username": "admin",
+    "status": "Todo",
+    "tags": "Array, Hash Table",
+    "templates": "{\"python\": \"class Solution:\\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\\n        pass\", \"java\": \"class Solution {\\n    public int[] twoSum(int[] nums, int target) {\\n        \\n    }\\n}\", \"cpp\": \"class Solution {\\npublic:\\n    vector<int> twoSum(vector<int>& nums, int target) {\\n        \\n    }\\n};\"}",
+    "test_cases": "[{\"input\": \"[2,7,11,15]\\n9\", \"output\": \"[0,1]\"}, {\"input\": \"[3,2,4]\\n6\", \"output\": \"[1,2]\"}, {\"input\": \"[3,3]\\n6\", \"output\": \"[0,1]\"}, {\"input\": \"[1,2,3,4,5]\\n9\", \"output\": \"[3,4]\"}, {\"input\": \"[-1,-2,-3,-4,-5]\\n-8\", \"output\": \"[2,4]\"}]",
+    "time_limits": "{\"python\": 2.0, \"cpp\": 1.0, \"java\": 1.5}",
+    "title": "Two Sum"
+  },
+  {
+    "description": "This is an added problem",
+    "difficulty": "Hard",
+    "drivers": "{\"python\":\"import sys\\nimport json\\n\\nif __name__ == \\\"__main__\\\":\\n    # read from sys.stdin\\n    pass\",\"cpp\":\"using namespace std;\\n\\nint main() {\\n    return 0;\\n}\",\"java\":\"class Driver {\\n    public static void main(String[] args) {\\n        \\n    }\\n}\"}",
+    "id": 3,
+    "owner_id": 1,
+    "owner_username": "admin",
+    "status": "Todo",
+    "tags": "Math",
+    "templates": "{\"python\":\"class Solution:\\n    def solve(self, args):\\n        pass\",\"cpp\":\"class Solution {\\npublic:\\n    void solve() {\\n        \\n    }\\n};\",\"java\":\"class Solution {\\n    public void solve() {\\n        \\n    }\\n}\"}",
+    "test_cases": "[{\"input\":\"1\",\"output\":\"1\"}]",
+    "time_limits": "{\"python\":2,\"cpp\":1,\"java\":2}",
+    "title": "Added Problem"
+  },
+  {
+    "description": "# Sum of Two Numbers\n\nGiven two integers `a` and `b`, return their sum.\n\n## Example 1\n**Input:** `a = 1`, `b = 2`\n**Output:** `3`\n\n## Example 2\n**Input:** `a = -1`, `b = 5`\n**Output:** `4`\n",
+    "difficulty": "Easy",
+    "drivers": "{\"python\": \"import sys\\nimport json\\n\\nif __name__ == '__main__':\\n    try:\\n        input_data = sys.stdin.read().strip()\\n        if not input_data:\\n            sys.exit(0)\\n            \\n        # Expecting JSON list like [1, 2]\\n        params = json.loads(input_data)\\n        a = params[0]\\n        b = params[1]\\n        \\n        sol = Solution()\\n        result = sol.sumTwoNumbers(a, b)\\n        print(result)\\n    except Exception as e:\\n        print(f\\\"Error: {e}\\\", file=sys.stderr)\\n\", \"java\": \"class Driver {\\n    public static void main(String[] args) {\\n        Scanner scanner = new Scanner(System.in);\\n        if (scanner.hasNextLine()) {\\n            String line = scanner.nextLine();\\n            line = line.trim();\\n            if (line.startsWith(\\\"[\\\") && line.endsWith(\\\"]\\\")) {\\n                line = line.substring(1, line.length() - 1);\\n            }\\n            String[] parts = line.split(\\\",\\\");\\n            if (parts.length >= 2) {\\n                try {\\n                    int a = Integer.parseInt(parts[0].trim());\\n                    int b = Integer.parseInt(parts[1].trim());\\n                    \\n                    Solution sol = new Solution();\\n                    System.out.println(sol.sumTwoNumbers(a, b));\\n                } catch (NumberFormatException e) {\\n                    // Handle potential parsing errors\\n                }\\n            }\\n        }\\n        scanner.close();\\n    }\\n}\", \"cpp\": \"using namespace std;\\n\\nint main() {\\n    string line;\\n    if (getline(cin, line)) {\\n        if (line.size() >= 2 && line.front() == '[' && line.back() == ']') {\\n            line = line.substr(1, line.size() - 2);\\n        }\\n        stringstream ss(line);\\n        string segment;\\n        vector<int> args;\\n        while(getline(ss, segment, ',')) {\\n            args.push_back(stoi(segment));\\n        }\\n\\n        if (args.size() >= 2) {\\n            Solution sol;\\n            int result = sol.sumTwoNumbers(args[0], args[1]);\\n            cout << result << endl;\\n        }\\n    }\\n    return 0;\\n}\"}",
+    "id": 2,
+    "owner_id": 1,
+    "owner_username": "admin",
+    "status": "Todo",
+    "tags": "Math, Basic",
+    "templates": "{\"python\": \"class Solution:\\n    def sumTwoNumbers(self, a: int, b: int) -> int:\\n        # Write your code here\\n        pass\", \"java\": \"class Solution {\\n    public int sumTwoNumbers(int a, int b) {\\n        // Write your code here\\n        return 0;\\n    }\\n}\", \"cpp\": \"class Solution {\\npublic:\\n    int sumTwoNumbers(int a, int b) {\\n        // Write your code here\\n        \\n    }\\n};\"}",
+    "test_cases": "[{\"input\": \"[1, 2]\", \"output\": \"3\"}, {\"input\": \"[-1, 5]\", \"output\": \"4\"}]",
+    "time_limits": "{\"python\": 1.0, \"cpp\": 0.5, \"java\": 1.0}",
+    "title": "Sum of Two Numbers"
+  }
+]
+
+=== 3.2 GET /api/problems/1 ===
+{
+  "description": "Given an array of integers `nums` and an integer `target`, return indices of the **two numbers** such that they add up to `target`.\n\nYou may assume that each input would have **exactly one solution**, and you may not use the same element twice.\n\nYou can return the answer in any order.\n\n**Example 1:**\n- **Input:** nums = [2,7,11,15], target = 9\n- **Output:** [0,1]\n- **Explanation:** Because nums[0] + nums[1] == 9, we return [0, 1].\n\n**Example 2:**\n- **Input:** nums = [3,2,4], target = 6\n- **Output:** [1,2]\n\n**Example 3:**\n- **Input:** nums = [3,3], target = 6\n- **Output:** [0,1]\n",
+  "difficulty": "Easy",
+  "drivers": "{\"python\": \"\\nif __name__ == '__main__':\\n    lines = sys.stdin.read().split('\\\\n')\\n    lines = [l.strip() for l in lines if l.strip()]\\n    if len(lines) >= 2:\\n        nums = json.loads(lines[0])\\n        target = int(lines[1])\\n        sol = Solution()\\n        result = sol.twoSum(nums, target)\\n        print(json.dumps(result))\", \"java\": \"class Driver {\\n    public static void main(String[] args) {\\n        Scanner scanner = new Scanner(System.in);\\n        if(scanner.hasNextLine()) {\\n            String line1 = scanner.nextLine().trim();\\n            String line2 = scanner.hasNextLine() ? scanner.nextLine().trim() : \\\"\\\";\\n            if(line1.length() > 2) line1 = line1.substring(1, line1.length()-1);\\n            String[] parts = line1.split(\\\",\\\");\\n            int[] nums = new int[parts.length];\\n            for(int i=0; i<parts.length; i++) {\\n                if(!parts[i].trim().isEmpty()) nums[i] = Integer.parseInt(parts[i].trim());\\n            }\\n            int target = Integer.parseInt(line2);\\n            Solution sol = new Solution();\\n            int[] res = sol.twoSum(nums, target);\\n            System.out.print(\\\"[\\\");\\n            for(int i=0; i<res.length; i++) {\\n                System.out.print(res[i]);\\n                if(i < res.length - 1) System.out.print(\\\",\\\");\\n            }\\n            System.out.print(\\\"]\\\");\\n        }\\n    }\\n}\", \"cpp\": \"int main() {\\n    string line1, line2;\\n    if(getline(cin, line1) && getline(cin, line2)) {\\n        // Parse nums\\n        if(line1.size() > 2) {\\n            line1 = line1.substr(1, line1.size() - 2);\\n        }\\n        stringstream ss(line1);\\n        string item;\\n        vector<int> nums;\\n        while (getline(ss, item, ',')) {\\n            if(!item.empty()) nums.push_back(stoi(item));\\n        }\\n        int target = stoi(line2);\\n        Solution sol;\\n        vector<int> res = sol.twoSum(nums, target);\\n        cout << \\\"[\\\";\\n        for(int i=0; i<res.size(); ++i) {\\n            cout << res[i];\\n            if(i < res.size()-1) cout << \\\",\\\";\\n        }\\n        cout << \\\"]\\\";\\n    }\\n    return 0;\\n}\"}",
+  "id": 1,
+  "owner_id": 1,
+  "owner_username": "admin",
+  "tags": "Array, Hash Table",
+  "templates": "{\"python\": \"class Solution:\\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\\n        pass\", \"java\": \"class Solution {\\n    public int[] twoSum(int[] nums, int target) {\\n        \\n    }\\n}\", \"cpp\": \"class Solution {\\npublic:\\n    vector<int> twoSum(vector<int>& nums, int target) {\\n        \\n    }\\n};\"}",
+  "test_cases": "[{\"input\": \"[2,7,11,15]\\n9\", \"output\": \"[0,1]\"}, {\"input\": \"[3,2,4]\\n6\", \"output\": \"[1,2]\"}, {\"input\": \"[3,3]\\n6\", \"output\": \"[0,1]\"}, {\"input\": \"[1,2,3,4,5]\\n9\", \"output\": \"[3,4]\"}, {\"input\": \"[-1,-2,-3,-4,-5]\\n-8\", \"output\": \"[2,4]\"}]",
+  "time_limits": "{\"python\": 2.0, \"cpp\": 1.0, \"java\": 1.5}",
+  "title": "Two Sum"
+}
+
+=== 3.3 GET /api/problems/my (admin's problems) ===
+[
+  {
+    "description": "Given an array of integers `nums` and an integer `target`, return indices of the **two numbers** such that they add up to `target`.\n\nYou may assume that each input would have **exactly one solution**, and you may not use the same element twice.\n\nYou can return the answer in any order.\n\n**Example 1:**\n- **Input:** nums = [2,7,11,15], target = 9\n- **Output:** [0,1]\n- **Explanation:** Because nums[0] + nums[1] == 9, we return [0, 1].\n\n**Example 2:**\n- **Input:** nums = [3,2,4], target = 6\n- **Output:** [1,2]\n\n**Example 3:**\n- **Input:** nums = [3,3], target = 6\n- **Output:** [0,1]\n",
+    "difficulty": "Easy",
+    "drivers": "{\"python\": \"\\nif __name__ == '__main__':\\n    lines = sys.stdin.read().split('\\\\n')\\n    lines = [l.strip() for l in lines if l.strip()]\\n    if len(lines) >= 2:\\n        nums = json.loads(lines[0])\\n        target = int(lines[1])\\n        sol = Solution()\\n        result = sol.twoSum(nums, target)\\n        print(json.dumps(result))\", \"java\": \"class Driver {\\n    public static void main(String[] args) {\\n        Scanner scanner = new Scanner(System.in);\\n        if(scanner.hasNextLine()) {\\n            String line1 = scanner.nextLine().trim();\\n            String line2 = scanner.hasNextLine() ? scanner.nextLine().trim() : \\\"\\\";\\n            if(line1.length() > 2) line1 = line1.substring(1, line1.length()-1);\\n            String[] parts = line1.split(\\\",\\\");\\n            int[] nums = new int[parts.length];\\n            for(int i=0; i<parts.length; i++) {\\n                if(!parts[i].trim().isEmpty()) nums[i] = Integer.parseInt(parts[i].trim());\\n            }\\n            int target = Integer.parseInt(line2);\\n            Solution sol = new Solution();\\n            int[] res = sol.twoSum(nums, target);\\n            System.out.print(\\\"[\\\");\\n            for(int i=0; i<res.length; i++) {\\n                System.out.print(res[i]);\\n                if(i < res.length - 1) System.out.print(\\\",\\\");\\n            }\\n            System.out.print(\\\"]\\\");\\n        }\\n    }\\n}\", \"cpp\": \"int main() {\\n    string line1, line2;\\n    if(getline(cin, line1) && getline(cin, line2)) {\\n        // Parse nums\\n        if(line1.size() > 2) {\\n            line1 = line1.substr(1, line1.size() - 2);\\n        }\\n        stringstream ss(line1);\\n        string item;\\n        vector<int> nums;\\n        while (getline(ss, item, ',')) {\\n            if(!item.empty()) nums.push_back(stoi(item));\\n        }\\n        int target = stoi(line2);\\n        Solution sol;\\n        vector<int> res = sol.twoSum(nums, target);\\n        cout << \\\"[\\\";\\n        for(int i=0; i<res.size(); ++i) {\\n            cout << res[i];\\n            if(i < res.size()-1) cout << \\\",\\\";\\n        }\\n        cout << \\\"]\\\";\\n    }\\n    return 0;\\n}\"}",
+    "id": 1,
+    "owner_id": 1,
+    "owner_username": "admin",
+    "status": "Todo",
+    "tags": "Array, Hash Table",
+    "templates": "{\"python\": \"class Solution:\\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\\n        pass\", \"java\": \"class Solution {\\n    public int[] twoSum(int[] nums, int target) {\\n        \\n    }\\n}\", \"cpp\": \"class Solution {\\npublic:\\n    vector<int> twoSum(vector<int>& nums, int target) {\\n        \\n    }\\n};\"}",
+    "test_cases": "[{\"input\": \"[2,7,11,15]\\n9\", \"output\": \"[0,1]\"}, {\"input\": \"[3,2,4]\\n6\", \"output\": \"[1,2]\"}, {\"input\": \"[3,3]\\n6\", \"output\": \"[0,1]\"}, {\"input\": \"[1,2,3,4,5]\\n9\", \"output\": \"[3,4]\"}, {\"input\": \"[-1,-2,-3,-4,-5]\\n-8\", \"output\": \"[2,4]\"}]",
+    "time_limits": "{\"python\": 2.0, \"cpp\": 1.0, \"java\": 1.5}",
+    "title": "Two Sum"
+  },
+  {
+    "description": "This is an added problem",
+    "difficulty": "Hard",
+    "drivers": "{\"python\":\"import sys\\nimport json\\n\\nif __name__ == \\\"__main__\\\":\\n    # read from sys.stdin\\n    pass\",\"cpp\":\"using namespace std;\\n\\nint main() {\\n    return 0;\\n}\",\"java\":\"class Driver {\\n    public static void main(String[] args) {\\n        \\n    }\\n}\"}",
+    "id": 3,
+    "owner_id": 1,
+    "owner_username": "admin",
+    "status": "Todo",
+    "tags": "Math",
+    "templates": "{\"python\":\"class Solution:\\n    def solve(self, args):\\n        pass\",\"cpp\":\"class Solution {\\npublic:\\n    void solve() {\\n        \\n    }\\n};\",\"java\":\"class Solution {\\n    public void solve() {\\n        \\n    }\\n}\"}",
+    "test_cases": "[{\"input\":\"1\",\"output\":\"1\"}]",
+    "time_limits": "{\"python\":2,\"cpp\":1,\"java\":2}",
+    "title": "Added Problem"
+  },
+  {
+    "description": "# Sum of Two Numbers\n\nGiven two integers `a` and `b`, return their sum.\n\n## Example 1\n**Input:** `a = 1`, `b = 2`\n**Output:** `3`\n\n## Example 2\n**Input:** `a = -1`, `b = 5`\n**Output:** `4`\n",
+    "difficulty": "Easy",
+    "drivers": "{\"python\": \"import sys\\nimport json\\n\\nif __name__ == '__main__':\\n    try:\\n        input_data = sys.stdin.read().strip()\\n        if not input_data:\\n            sys.exit(0)\\n            \\n        # Expecting JSON list like [1, 2]\\n        params = json.loads(input_data)\\n        a = params[0]\\n        b = params[1]\\n        \\n        sol = Solution()\\n        result = sol.sumTwoNumbers(a, b)\\n        print(result)\\n    except Exception as e:\\n        print(f\\\"Error: {e}\\\", file=sys.stderr)\\n\", \"java\": \"class Driver {\\n    public static void main(String[] args) {\\n        Scanner scanner = new Scanner(System.in);\\n        if (scanner.hasNextLine()) {\\n            String line = scanner.nextLine();\\n            line = line.trim();\\n            if (line.startsWith(\\\"[\\\") && line.endsWith(\\\"]\\\")) {\\n                line = line.substring(1, line.length() - 1);\\n            }\\n            String[] parts = line.split(\\\",\\\");\\n            if (parts.length >= 2) {\\n                try {\\n                    int a = Integer.parseInt(parts[0].trim());\\n                    int b = Integer.parseInt(parts[1].trim());\\n                    \\n                    Solution sol = new Solution();\\n                    System.out.println(sol.sumTwoNumbers(a, b));\\n                } catch (NumberFormatException e) {\\n                    // Handle potential parsing errors\\n                }\\n            }\\n        }\\n        scanner.close();\\n    }\\n}\", \"cpp\": \"using namespace std;\\n\\nint main() {\\n    string line;\\n    if (getline(cin, line)) {\\n        if (line.size() >= 2 && line.front() == '[' && line.back() == ']') {\\n            line = line.substr(1, line.size() - 2);\\n        }\\n        stringstream ss(line);\\n        string segment;\\n        vector<int> args;\\n        while(getline(ss, segment, ',')) {\\n            args.push_back(stoi(segment));\\n        }\\n\\n        if (args.size() >= 2) {\\n            Solution sol;\\n            int result = sol.sumTwoNumbers(args[0], args[1]);\\n            cout << result << endl;\\n        }\\n    }\\n    return 0;\\n}\"}",
+    "id": 2,
+    "owner_id": 1,
+    "owner_username": "admin",
+    "status": "Solved",
+    "tags": "Math, Basic",
+    "templates": "{\"python\": \"class Solution:\\n    def sumTwoNumbers(self, a: int, b: int) -> int:\\n        # Write your code here\\n        pass\", \"java\": \"class Solution {\\n    public int sumTwoNumbers(int a, int b) {\\n        // Write your code here\\n        return 0;\\n    }\\n}\", \"cpp\": \"class Solution {\\npublic:\\n    int sumTwoNumbers(int a, int b) {\\n        // Write your code here\\n        \\n    }\\n};\"}",
+    "test_cases": "[{\"input\": \"[1, 2]\", \"output\": \"3\"}, {\"input\": \"[-1, 5]\", \"output\": \"4\"}]",
+    "time_limits": "{\"python\": 1.0, \"cpp\": 0.5, \"java\": 1.0}",
+    "title": "Sum of Two Numbers"
+  }
+]
+
+=== 4.1 POST /api/problems/1/run (code execution) ===
+{
+  "error": "",
+  "output": "[0, 1]\n",
+  "success": true,
+  "worker_id": "worker-1"
+}
+
+=== 5.1 POST /api/problems/1/submit (submit solution) ===
+{
+  "message": "Submission processed",
+  "output": "Wrong Answer on test case 1:\nInput:\n[2,7,11,15]\n9\n\nOutput:\n[0, 1]\n\nExpected:\n[0,1]",
+  "status": "Wrong Answer"
+}
+
+=== 5.2 GET /api/problems/1/submissions ===
+[
+  {
+    "code": "class Solution:\n    def twoSum(self, nums, target):\n        lookup = {}\n        for i, num in enumerate(nums):\n            if target - num in lookup:\n                return [lookup[target - num], i]\n            lookup[num] = i\n        return []",
+    "created_at": "2026-01-18T16:48:33.002039",
+    "id": 6,
+    "language": "python",
+    "output": "Wrong Answer on test case 1:\nInput:\n[2,7,11,15]\n9\n\nOutput:\n[0, 1]\n\nExpected:\n[0,1]",
+    "problem_id": 1,
+    "status": "Wrong Answer",
+    "user_id": 3
+  },
+  {
+    "code": "\nimport json\nclass Solution:\n    def twoSum(self, nums, target):\n        lookup = {}\n        for i, num in enumerate(nums):\n            if target - num in lookup:\n                return [lookup[target - num], i]\n            lookup[num] = i\n        return []\n",
+    "created_at": "2026-01-14T18:09:29.921596",
+    "id": 5,
+    "language": "python",
+    "output": "Wrong Answer on test case 1:\nInput:\n[2,7,11,15]\n9\n\nOutput:\n[0, 1]\n\nExpected:\n[0,1]",
+    "problem_id": 1,
+    "status": "Wrong Answer",
+    "user_id": 3
+  }
+]
+
+=== 5.3 GET /api/problems/submissions (all - admin) ===
+[
+  {
+    "code": "class Solution:\n    def twoSum(self, nums, target):\n        lookup = {}\n        for i, num in enumerate(nums):\n            if target - num in lookup:\n                return [lookup[target - num], i]\n            lookup[num] = i\n        return []",
+    "created_at": "2026-01-18T16:48:33.002039",
+    "id": 6,
+    "language": "python",
+    "output": "Wrong Answer on test case 1:\nInput:\n[2,7,11,15]\n9\n\nOutput:\n[0, 1]\n\nExpected:\n[0,1]",
+    "problem_id": 1,
+    "problem_title": "Two Sum",
+    "status": "Wrong Answer",
+    "user_id": 3,
+    "username": "student"
+  },
+  {
+    "code": "\nimport json\nclass Solution:\n    def twoSum(self, nums, target):\n        lookup = {}\n        for i, num in enumerate(nums):\n            if target - num in lookup:\n                return [lookup[target - num], i]\n            lookup[num] = i\n        return []\n",
+    "created_at": "2026-01-14T18:09:29.921596",
+    "id": 5,
+    "language": "python",
+    "output": "Wrong Answer on test case 1:\nInput:\n[2,7,11,15]\n9\n\nOutput:\n[0, 1]\n\nExpected:\n[0,1]",
+    "problem_id": 1,
+    "problem_title": "Two Sum",
+    "status": "Wrong Answer",
+    "user_id": 3,
+    "username": "student"
+  },
+  {
+    "code": "class Solution {\npublic:\n    int sumTwoNumbers(int a, int b) {\n        // Write your code here\n        return a + b;\n    }\n};",
+    "created_at": "2026-01-14T17:48:07.804503",
+    "id": 4,
+    "language": "cpp",
+    "output": "All 2 test cases passed!",
+    "problem_id": 2,
+    "problem_title": "Sum of Two Numbers",
+    "status": "Accepted",
+    "user_id": 2,
+    "username": "denis"
+  },
+  {
+    "code": "class Solution {\npublic:\n    int sumTwoNumbers(int a, int b) {\n        // Write your code here\n        return a + b;\n    }\n};",
+    "created_at": "2026-01-14T17:48:05.932308",
+    "id": 3,
+    "language": "cpp",
+    "output": "All 2 test cases passed!",
+    "problem_id": 2,
+    "problem_title": "Sum of Two Numbers",
+    "status": "Accepted",
+    "user_id": 2,
+    "username": "denis"
+  },
+  {
+    "code": "class Solution {\npublic:\n    int sumTwoNumbers(int a, int b) {\n        // Write your code here\n        return a + b;\n    }\n};",
+    "created_at": "2026-01-14T09:15:54.639420",
+    "id": 2,
+    "language": "cpp",
+    "output": "All 2 test cases passed!",
+    "problem_id": 2,
+    "problem_title": "Sum of Two Numbers",
+    "status": "Accepted",
+    "user_id": 1,
+    "username": "admin"
+  },
+  {
+    "code": "class Solution {\npublic:\n    int sumTwoNumbers(int a, int b) {\n        // Write your code here\n        return a + b;\n    }\n};",
+    "created_at": "2026-01-14T09:15:53.184174",
+    "id": 1,
+    "language": "cpp",
+    "output": "All 2 test cases passed!",
+    "problem_id": 2,
+    "problem_title": "Sum of Two Numbers",
+    "status": "Accepted",
+    "user_id": 1,
+    "username": "admin"
+  }
+]
+
+=== 6.1 REDIS PING ===
+PONG
+
+=== 7.1 API GATEWAY (Traefik) - via port 80 ===
+[
+  {
+    "description": "Given an array of integers `nums` and an integer `target`, return indices of the **two numbers** such that they add up to `target`.\n\nYou may assume that each input would have **exactly one solution**, and you may not use the same element twice.\n\nYou can return the answer in any order.\n\n**Example 1:**\n- **Input:** nums = [2,7,11,15], target = 9\n- **Output:** [0,1]\n- **Explanation:** Because nums[0] + nums[1] == 9, we return [0, 1].\n\n**Example 2:**\n- **Input:*
+
+=== 8. WORKER DISTRIBUTION TEST ===
+Running 5 parallel requests to show worker distribution...
+Request 1:
+worker-1
+Request 2:
+worker-1
+Request 3:
+worker-1
+
+=== RUNNER LOGS (worker identification) ===
+[36mrunner_1    |[0m [worker-1] Processing job 60fae18c-423e-42b9-b0e0-0563f81ef13c for language: python
+[36mrunner_1    |[0m [worker-1] Job completed: success=True
+[36mrunner_1    |[0m [worker-1] Processing job 8475fb7a-7539-4597-b46e-282f01b2e596 for language: python
+[36mrunner_1    |[0m [worker-1] Job completed: success=True
+[33mrunner_2    |[0m [worker-1] Processing job 4cb932ee-9384-4204-be0b-3f79b1b012b0 for language: python
+[33mrunner_2    |[0m [worker-1] Job completed: success=True
+[33mrunner_2    |[0m [worker-1] Processing job 372ce584-2e25-401e-8b4a-7f46c1786f5e for language: python
+[33mrunner_2    |[0m [worker-1] Job completed: success=True
+[33mrunner_2    |[0m [worker-1] Processing job 743dd59b-5310-4ea1-8200-3a5ed7fa1b19 for language: python
+[33mrunner_2    |[0m [worker-1] Job completed: success=True
+
+=== SERVER LOGS (worker handling) ===
+[36mserver_1    |[0m [Server] Code execution handled by: worker-1
+[36mserver_1    |[0m [Server] Code execution handled by: worker-1
+[36mserver_1    |[0m [Server] Code execution handled by: worker-1
+[36mserver_1    |[0m [Server] Code execution handled by: worker-1
+[36mserver_1    |[0m [Server] Code execution handled by: worker-1
+
+=== END OF TESTS ===
+
+=== UPDATED: WORKER LOAD BALANCING TEST ===
+Date: Sun Jan 18 06:52:47 PM EET 2026
+Request 1: worker-aa52a9ffab78
+Request 2: worker-ceef6568a562
+Request 3: worker-aa52a9ffab78
+Request 4: worker-ceef6568a562
+Request 5: worker-aa52a9ffab78
+Request 6: worker-ceef6568a562
+[36mrunner_1    |[0m [worker-aa52a9ffab78] Processing job b5f1e3a5-ff2e-48c4-b844-5eff07923ed5 for language: python
+[36mrunner_1    |[0m [worker-aa52a9ffab78] Processing job aee1f343-a97f-493c-b23e-56aa08478f6c for language: python
+[36mrunner_1    |[0m [worker-aa52a9ffab78] Processing job 6132eb1d-0f69-417b-9dc5-78f81931c842 for language: python
+[33mrunner_2    |[0m [worker-ceef6568a562] Processing job e06be133-44f7-4a16-b244-389f73ce3fd9 for language: python
+[33mrunner_2    |[0m [worker-ceef6568a562] Processing job 8bc0d4f1-31a1-420b-88a8-cc2a6f20aa1d for language: python
+[33mrunner_2    |[0m [worker-ceef6568a562] Processing job 8655702d-e815-411c-b4dc-38598cc6387c for language: python
+
+=== ARCHITECTURE SUMMARY ===
+[36mrunner_1    |[0m [worker-aa52a9ffab78] Processing job b5f1e3a5-ff2e-48c4-b844-5eff07923ed5 for language: python
+[36mrunner_1    |[0m [worker-aa52a9ffab78] Processing job aee1f343-a97f-493c-b23e-56aa08478f6c for language: python
+[36mrunner_1    |[0m [worker-aa52a9ffab78] Processing job 6132eb1d-0f69-417b-9dc5-78f81931c842 for language: python
+[33mrunner_2    |[0m [worker-ceef6568a562] Processing job e06be133-44f7-4a16-b244-389f73ce3fd9 for language: python
+[33mrunner_2    |[0m [worker-ceef6568a562] Processing job 8bc0d4f1-31a1-420b-88a8-cc2a6f20aa1d for language: python
+[33mrunner_2    |[0m [worker-ceef6568a562] Processing job 8655702d-e815-411c-b4dc-38598cc6387c for language: python
+
+=== ARCHITECTURE SUMMARY ===
+         Name                        Command               State                                     Ports                                   
+---------------------------------------------------------------------------------------------------------------------------------------------
+scd-leetcode_client_1     docker-entrypoint.sh npm start   Up      0.0.0.0:3000->3000/tcp,:::3000->3000/tcp                                  
+scd-leetcode_db_1         docker-entrypoint.sh postgres    Up      0.0.0.0:5433->5432/tcp,:::5433->5432/tcp                                  
+scd-leetcode_keycloak_1   /opt/keycloak/bin/kc.sh st ...   Up      0.0.0.0:8081->8080/tcp,:::8081->8080/tcp, 8443/tcp                        
+scd-leetcode_redis_1      docker-entrypoint.sh redis ...   Up      0.0.0.0:6379->6379/tcp,:::6379->6379/tcp                                  
+scd-leetcode_runner_1     python app.py                    Up      5000/tcp                                                                  
+scd-leetcode_runner_2     python app.py                    Up      5000/tcp                                                                  
+scd-leetcode_server_1     python run.py                    Up      0.0.0.0:5001->5001/tcp,:::5001->5001/tcp                                  
+scd-leetcode_traefik_1    /entrypoint.sh --api.insec ...   Up      0.0.0.0:80->80/tcp,:::80->80/tcp, 0.0.0.0:8888->8080/tcp,:::8888->8080/tcp

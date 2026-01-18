@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchProblems } from '../api';
+import { fetchProblems, deleteProblem } from '../api';
 import keycloak from '../keycloak';
 
 const Home: React.FC = () => {
     const [problems, setProblems] = useState<any[]>([]);
 
+    const loadProblems = async () => {
+         try {
+             const data = await fetchProblems();
+             setProblems(data);
+         } catch (e) {
+             console.error(e);
+         }
+    };
+
     useEffect(() => {
-        const loadProblems = async () => {
-             try {
-                 const data = await fetchProblems();
-                 setProblems(data);
-             } catch (e) {
-                 console.error(e);
-             }
-        };
         loadProblems();
     }, []);
 
@@ -22,6 +23,20 @@ const Home: React.FC = () => {
     const username = keycloak.tokenParsed?.preferred_username;
     // VERY Basic admin check - in real app check roles
     const isAdmin = username === 'admin';
+
+    const handleDelete = async (problemId: number, problemTitle: string) => {
+        if (!window.confirm(`Are you sure you want to delete "${problemTitle}"? This action cannot be undone.`)) {
+            return;
+        }
+        try {
+            await deleteProblem(problemId);
+            // Reload problems list
+            loadProblems();
+        } catch (e: any) {
+            alert(e.response?.data?.error || 'Failed to delete problem');
+            console.error(e);
+        }
+    };
 
     return (
         <div style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px' }}>
@@ -33,6 +48,7 @@ const Home: React.FC = () => {
                             <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600' }}>#</th>
                             <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600' }}>Title</th>
                             <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600' }}>Difficulty</th>
+                            <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600' }}>Added by</th>
                             <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600' }}>Status</th>
                             <th style={{ padding: '15px', textAlign: 'left', fontWeight: '600' }}>Action</th>
                         </tr>
@@ -75,6 +91,9 @@ const Home: React.FC = () => {
                                         {p.difficulty}
                                     </span>
                                 </td>
+                                <td style={{ padding: '15px', color: '#666' }}>
+                                    {p.owner_username || 'Unknown'}
+                                </td>
                                 <td style={{ padding: '15px' }}>
                                     {p.status === 'Solved' ? (
                                         <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>Solved</span>
@@ -86,16 +105,32 @@ const Home: React.FC = () => {
                                 </td>
                                 <td style={{ padding: '15px' }}>
                                     {showEdit && (
-                                        <Link to={`/edit-problem/${p.id}`} style={{ 
-                                            padding: '6px 12px', 
-                                            backgroundColor: '#ff9800', 
-                                            color: 'white', 
-                                            textDecoration: 'none', 
-                                            borderRadius: '4px', 
-                                            fontSize: '14px' 
-                                        }}>
-                                            Edit
-                                        </Link>
+                                        <>
+                                            <Link to={`/edit-problem/${p.id}`} style={{ 
+                                                padding: '6px 12px', 
+                                                backgroundColor: '#ff9800', 
+                                                color: 'white', 
+                                                textDecoration: 'none', 
+                                                borderRadius: '4px', 
+                                                fontSize: '14px',
+                                                marginRight: '8px'
+                                            }}>
+                                                Edit
+                                            </Link>
+                                            <button 
+                                                onClick={() => handleDelete(p.id, p.title)}
+                                                style={{ 
+                                                    padding: '6px 12px', 
+                                                    backgroundColor: '#dc3545', 
+                                                    color: 'white', 
+                                                    border: 'none',
+                                                    borderRadius: '4px', 
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer'
+                                                }}>
+                                                Delete
+                                            </button>
+                                        </>
                                     )}
                                 </td>
                             </tr>

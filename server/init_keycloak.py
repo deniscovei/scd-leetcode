@@ -104,6 +104,21 @@ def init_keycloak():
         else:
             print(f"User '{admin_username}' already exists.")
 
+        # Create Denis User
+        denis_username = "denis"
+        users = admin.get_users({"username": denis_username})
+        if not users:
+            print(f"Creating user '{denis_username}'...")
+            admin.create_user(payload={
+                "username": denis_username,
+                "email": "denis@example.com",
+                "enabled": True,
+                "emailVerified": True,
+                "credentials": [{"type": "password", "value": "denis", "temporary": False}]
+            })
+        else:
+            print(f"User '{denis_username}' already exists.")
+
         # Create confidential client for backend API (Resource Server)
         backend_client_id = "scd-leetcode-backend"
         backend_client = next((c for c in clients if c.get('clientId') == backend_client_id), None)

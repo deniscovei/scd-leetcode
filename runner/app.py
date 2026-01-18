@@ -4,12 +4,26 @@ import os
 import uuid
 import shutil
 import threading
+import socket
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
 TEMP_DIR = '/tmp/code_execution'
+# Get unique worker ID - try hostname (Docker container ID) or fallback to a file-based ID
+def get_worker_id():
+    # In Docker, hostname is the container ID (short form)
+    hostname = socket.gethostname()
+    # Also try to read from /etc/hostname which has the full container ID
+    try:
+        with open('/etc/hostname', 'r') as f:
+            container_id = f.read().strip()[:12]  # Short container ID
+            return f'worker-{container_id}'
+    except:
+        return f'worker-{hostname}'
+
+WORKER_ID = get_worker_id()
 
 if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
@@ -18,6 +32,9 @@ def execute_code_logic(language: str, code: str, input_data: str, timeout: float
     job_id = str(uuid.uuid4())
     temp_dir = os.path.join(TEMP_DIR, job_id)
     os.makedirs(temp_dir, exist_ok=True)
+    
+    # Log which worker is handling this job
+    print(f"[{WORKER_ID}] Processing job {job_id} for language: {language}", flush=True)
     
     output = ""
     error = ""
@@ -141,7 +158,8 @@ def execute_code_logic(language: str, code: str, input_data: str, timeout: float
     return {
         'success': success,
         'output': output,
-        'error': error
+        'error': error,
+        'worker_id': WORKER_ID
     }
 
 @app.route('/execute', methods=['POST'])
@@ -159,6 +177,7 @@ def run_code():
         return jsonify({'error': 'Missing code or language'}), 400
 
     result = execute_code_logic(language, code, input_data, float(timeout))
+    print(f"[{WORKER_ID}] Job completed: success={result['success']}", flush=True)
     return jsonify(result), 200
 
 if __name__ == '__main__':

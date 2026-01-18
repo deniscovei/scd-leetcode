@@ -1,27 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchMyProblems } from '../api';
+import { fetchMyProblems, deleteProblem } from '../api';
 import keycloak from '../keycloak';
 
 const MyProblems: React.FC = () => {
     const [problems, setProblems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const loadProblems = async () => {
+         try {
+             const data = await fetchMyProblems();
+             setProblems(data);
+         } catch (e) {
+             console.error(e);
+         } finally {
+             setLoading(false);
+         }
+    };
+
     useEffect(() => {
-        const loadProblems = async () => {
-             try {
-                 const data = await fetchMyProblems();
-                 setProblems(data);
-             } catch (e) {
-                 console.error(e);
-             } finally {
-                 setLoading(false);
-             }
-        };
         if (keycloak.authenticated) {
             loadProblems();
         }
     }, []);
+
+    const handleDelete = async (problemId: number, problemTitle: string) => {
+        if (!window.confirm(`Are you sure you want to delete "${problemTitle}"? This action cannot be undone.`)) {
+            return;
+        }
+        try {
+            await deleteProblem(problemId);
+            // Reload problems list
+            loadProblems();
+        } catch (e: any) {
+            alert(e.response?.data?.error || 'Failed to delete problem');
+            console.error(e);
+        }
+    };
     
     // Check if user is admin - very basic check, ideally roles should be used.
     // However, backend filters correctly, so we just display what we get.
@@ -93,10 +108,24 @@ const MyProblems: React.FC = () => {
                                         color: 'white', 
                                         textDecoration: 'none', 
                                         borderRadius: '4px', 
-                                        fontSize: '14px' 
+                                        fontSize: '14px',
+                                        marginRight: '8px'
                                     }}>
                                         Edit
                                     </Link>
+                                    <button 
+                                        onClick={() => handleDelete(p.id, p.title)}
+                                        style={{ 
+                                            padding: '6px 12px', 
+                                            backgroundColor: '#dc3545', 
+                                            color: 'white', 
+                                            border: 'none',
+                                            borderRadius: '4px', 
+                                            fontSize: '14px',
+                                            cursor: 'pointer'
+                                        }}>
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}

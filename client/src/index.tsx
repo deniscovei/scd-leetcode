@@ -4,7 +4,35 @@ import App from './App';
 import './index.css';
 import keycloak from './keycloak';
 
-/* ...existing code... */
+// ResizeObserver loop error suppression - MUST be before any rendering
+// This is a known benign error that occurs with Monaco Editor and other resize-aware components
+const resizeObserverLoopErr = /ResizeObserver loop/;
+
+// Suppress console errors
+const originalError = console.error;
+console.error = (...args) => {
+    if (args.some(arg => typeof arg === 'string' && resizeObserverLoopErr.test(arg))) {
+        return;
+    }
+    originalError.call(console, ...args);
+};
+
+// Suppress window errors
+window.addEventListener('error', (event) => {
+    if (event.message && resizeObserverLoopErr.test(event.message)) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        return true;
+    }
+}, true);
+
+// Suppress unhandled rejection errors related to ResizeObserver
+window.addEventListener('unhandledrejection', (event) => {
+    if (event.reason && typeof event.reason.message === 'string' && resizeObserverLoopErr.test(event.reason.message)) {
+        event.preventDefault();
+        return true;
+    }
+});
 
 // Initialize Keycloak
 keycloak.init({ 
@@ -19,31 +47,4 @@ keycloak.init({
       document.getElementById('root')
     );
 }).catch(console.error);
-
-// ResizeObserver loop error suppression
-const resizeObserverLoopErr = /ResizeObserver loop limit exceeded|ResizeObserver loop completed with undelivered notifications/;
-
-const originalError = console.error;
-console.error = (...args) => {
-    if (args.some(arg => typeof arg === 'string' && resizeObserverLoopErr.test(arg))) {
-        return;
-    }
-    originalError.call(console, ...args);
-};
-
-window.addEventListener('error', (event) => {
-    if (resizeObserverLoopErr.test(event.message)) {
-        event.stopImmediatePropagation();
-    }
-});
-
-window.onerror = (message, source, lineno, colno, error) => {
-    if (typeof message === 'string' && resizeObserverLoopErr.test(message)) {
-        return true;
-    }
-    return false;
-};
-
-
-/* ReactDOM.render handled in keycloak.init */
 
