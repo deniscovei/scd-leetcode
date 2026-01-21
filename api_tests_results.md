@@ -1,6 +1,6 @@
 # API Endpoint Tests - SCD.Code Platform
 
-> **Test Date:** January 18, 2026  
+> **Test Date:** January 21, 2026  
 > **Platform:** SCD LeetCode Clone with Distributed Architecture
 
 ---
@@ -15,12 +15,13 @@
 6. [Ranking API](#6-ranking-api)
 7. [Infrastructure Services](#7-infrastructure-services)
 8. [Worker Load Balancing](#8-worker-load-balancing)
+9. [Data Validation](#9-data-validation)
 
 ---
 
 ## 1. Service Status
 
-### Check All Services
+### Check All Services (Docker Compose)
 
 ```bash
 docker-compose ps
@@ -38,6 +39,24 @@ scd-leetcode_runner_1     python app.py                    Up      5000/tcp
 scd-leetcode_runner_2     python app.py                    Up      5000/tcp
 scd-leetcode_server_1     python run.py                    Up      0.0.0.0:5001->5001/tcp
 scd-leetcode_traefik_1    /entrypoint.sh --api.insec ...   Up      0.0.0.0:80->80/tcp, 0.0.0.0:8888->8080/tcp
+```
+
+### Check All Services (Docker Swarm)
+
+```bash
+docker stack services leetcode
+```
+
+**Expected Output:**
+```
+ID             NAME                MODE         REPLICAS   IMAGE                              PORTS
+xxxxx          leetcode_client     replicated   1/1        scd-leetcode_client:latest
+xxxxx          leetcode_db         replicated   1/1        postgres:13
+xxxxx          leetcode_keycloak   replicated   1/1        quay.io/keycloak/keycloak:23.0.0   *:8081->8080/tcp
+xxxxx          leetcode_redis      replicated   1/1        redis:7-alpine
+xxxxx          leetcode_runner     replicated   3/3        scd-leetcode_runner:latest
+xxxxx          leetcode_server     replicated   1/1        scd-leetcode_server:latest
+xxxxx          leetcode_traefik    replicated   1/1        traefik:v2.10                      *:80->80/tcp, *:8888->8080/tcp
 ```
 
 ---
@@ -194,7 +213,75 @@ curl -s -X POST "http://localhost:5001/api/problems/" \
   }' | jq .
 ```
 
-### 3.4 GET /api/problems/my - Get User's Own Problems (Auth Required)
+**Expected Output (Success):**
+```json
+{
+  "id": 8,
+  "title": "Test Problem",
+  "description": "This is a test problem",
+  "difficulty": "Easy",
+  "tags": "test",
+  "owner_id": 1,
+  "owner_username": "admin"
+}
+```
+
+**Expected Output (Duplicate Title - 409 Conflict):**
+```json
+{
+  "error": "A problem with title \"Test Problem\" already exists"
+}
+```
+
+### 3.4 PUT /api/problems/{id} - Update Problem (Owner/Admin Required)
+
+```bash
+TOKEN=$(curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=scd-leetcode-client&username=admin&password=admin" | jq -r .access_token)
+
+curl -s -X PUT "http://localhost:5001/api/problems/1" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "description": "Updated description",
+    "difficulty": "Medium"
+  }' | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "id": 1,
+  "title": "Two Sum",
+  "description": "Updated description",
+  "difficulty": "Medium",
+  "owner_id": 1,
+  "owner_username": "admin"
+}
+```
+
+### 3.5 DELETE /api/problems/{id} - Delete Problem (Owner/Admin Required)
+
+```bash
+TOKEN=$(curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=scd-leetcode-client&username=admin&password=admin" | jq -r .access_token)
+
+curl -s -X DELETE "http://localhost:5001/api/problems/8" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "message": "Problem deleted successfully",
+  "deleted_problem": "Test Problem",
+  "deleted_submissions_count": 0
+}
+```
+
+### 3.6 GET /api/problems/my - Get User's Own Problems (Auth Required)
 
 ```bash
 TOKEN=$(curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-connect/token" \
@@ -407,6 +494,33 @@ curl -s -X GET "http://localhost/api/problems/" | jq '.[0].title'
 curl -s "http://localhost:8888/api/overview" | jq .
 ```
 
+**Expected Output:**
+```json
+{
+  "http": {
+    "routers": {
+      "total": 4,
+      "warnings": 0,
+      "errors": 0
+    },
+    "services": {
+      "total": 4,
+      "warnings": 0,
+      "errors": 0
+    },
+    "middlewares": {
+      "total": 2,
+      "warnings": 0,
+      "errors": 0
+    }
+  },
+  "tcp": { ... },
+  "udp": { ... },
+  "features": { ... },
+  "providers": ["docker"]
+}
+```
+
 ---
 
 ## 8. Worker Load Balancing
@@ -477,3 +591,184 @@ runner_2    | [worker-ceef6568a562] Processing job 8bc0d4f1-... for language: py
 | admin | admin | Administrator |
 | student | student | Student |
 | denis | denis | Student |
+
+---
+
+## 9. Data Validation
+
+### 9.1 Create Problem - Missing Required Fields (400 Bad Request)
+
+```bash
+TOKEN=$(curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=scd-leetcode-client&username=admin&password=admin" | jq -r .access_token)
+
+curl -s -X POST "http://localhost:5001/api/problems/" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"title": "AB"}' | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "Title must be at least 3 characters long"
+}
+```
+
+### 9.2 Create Problem - Invalid Difficulty (400 Bad Request)
+
+```bash
+curl -s -X POST "http://localhost:5001/api/problems/" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "title": "Test Problem",
+    "description": "Test",
+    "difficulty": "SuperHard"
+  }' | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "Difficulty must be one of: Easy, Medium, Hard"
+}
+```
+
+### 9.3 Create Problem - Duplicate Title (409 Conflict)
+
+```bash
+curl -s -X POST "http://localhost:5001/api/problems/" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "title": "Two Sum",
+    "description": "Duplicate",
+    "difficulty": "Easy"
+  }' | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "A problem with title \"Two Sum\" already exists"
+}
+```
+
+### 9.4 Submit Solution - Invalid Language (400 Bad Request)
+
+```bash
+TOKEN=$(curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=scd-leetcode-client&username=student&password=student" | jq -r .access_token)
+
+curl -s -X POST "http://localhost:5001/api/problems/1/submit" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "language": "ruby",
+    "code": "puts 1"
+  }' | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "Language \"ruby\" is not supported. Allowed: python, cpp, java"
+}
+```
+
+### 9.5 Submit Solution - Empty Code (400 Bad Request)
+
+```bash
+curl -s -X POST "http://localhost:5001/api/problems/1/submit" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "language": "python",
+    "code": ""
+  }' | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "Code is required and must be a string"
+}
+```
+
+### 9.6 Update Problem - Unauthorized (403 Forbidden)
+
+```bash
+# Student trying to update admin's problem
+TOKEN=$(curl -s -X POST "http://localhost:8081/realms/scd-leetcode/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=scd-leetcode-client&username=student&password=student" | jq -r .access_token)
+
+curl -s -X PUT "http://localhost:5001/api/problems/1" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"title": "Hacked"}' | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "Unauthorized - only owner or admin can update"
+}
+```
+
+### 9.7 Delete Problem - Unauthorized (403 Forbidden)
+
+```bash
+curl -s -X DELETE "http://localhost:5001/api/problems/1" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "Unauthorized - only owner or admin can delete"
+}
+```
+
+### 9.8 Run Code - Invalid Input Length (400 Bad Request)
+
+```bash
+# Generate input > 10KB
+LARGE_INPUT=$(python3 -c "print('x' * 15000)")
+
+curl -s -X POST "http://localhost:5001/api/problems/1/run" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{
+    \"language\": \"python\",
+    \"code\": \"print(1)\",
+    \"input\": \"$LARGE_INPUT\"
+  }" | jq .
+```
+
+**Expected Output:**
+```json
+{
+  "error": "Input is too long (max 10KB)"
+}
+```
+
+---
+
+## Validation Summary
+
+| Endpoint | Validation | HTTP Code |
+|----------|------------|-----------|
+| POST /problems/ | Title required, min 3 chars, max 255 | 400 |
+| POST /problems/ | Title must be unique | 409 |
+| POST /problems/ | Difficulty: Easy/Medium/Hard | 400 |
+| POST /problems/ | test_cases must be array with input/output | 400 |
+| POST /problems/ | time_limits: positive number, max 60s | 400 |
+| PUT /problems/{id} | Only owner or admin can update | 403 |
+| DELETE /problems/{id} | Only owner or admin can delete | 403 |
+| POST /problems/{id}/submit | Language: python/cpp/java | 400 |
+| POST /problems/{id}/submit | Code required, max 100KB | 400 |
+| POST /problems/{id}/run | Input max 10KB | 400 |

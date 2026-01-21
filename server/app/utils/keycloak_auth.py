@@ -88,7 +88,7 @@ def token_required(f):
                 "verify_iat": True,
                 "verify_exp": True,
                 "verify_nbf": True,
-                "verify_iss": True,
+                "verify_iss": False,  # Disable issuer check (frontend uses localhost:8081, backend uses keycloak:8080)
                 "verify_sub": True,
                 "verify_jti": True,
                 "verify_at_hash": True,

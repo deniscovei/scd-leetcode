@@ -68,11 +68,34 @@ def submit_solution(problem_id):
     session = get_session()
     current_user_id = g.user_id
     data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'Request body is required'}), 400
+    
     code = data.get('code')
     language = data.get('language')
     
-    if not code or not language:
-        return jsonify({'error': 'Missing code or language'}), 400
+    # ========== DATA CONSISTENCY VALIDATION ==========
+    
+    # 1. Validate required fields
+    if not code or not isinstance(code, str):
+        return jsonify({'error': 'Code is required and must be a string'}), 400
+    if not language or not isinstance(language, str):
+        return jsonify({'error': 'Language is required and must be a string'}), 400
+    
+    # 2. Validate supported language
+    allowed_languages = ['python', 'cpp', 'java']
+    if language not in allowed_languages:
+        return jsonify({'error': f'Language "{language}" is not supported. Allowed: {", ".join(allowed_languages)}'}), 400
+    
+    # 3. Validate code length (prevent spam/attacks)
+    if len(code) > 100000:  # 100KB max
+        return jsonify({'error': 'Code is too long (max 100KB)'}), 400
+    
+    if len(code.strip()) < 1:
+        return jsonify({'error': 'Code cannot be empty'}), 400
+    
+    # ========== END VALIDATION ==========
 
     try:
         problem = session.query(Problem).get(problem_id)
@@ -180,12 +203,36 @@ from typing import *
 def run_code(problem_id):
     session = get_session()
     data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'Request body is required'}), 400
+    
     code = data.get('code')
     language = data.get('language')
     input_data = data.get('input')
     
-    if not code or not language or input_data is None:
-        return jsonify({'error': 'Missing code, language or input'}), 400
+    # ========== DATA CONSISTENCY VALIDATION ==========
+    
+    # 1. Validate required fields
+    if not code or not isinstance(code, str):
+        return jsonify({'error': 'Code is required and must be a string'}), 400
+    if not language or not isinstance(language, str):
+        return jsonify({'error': 'Language is required and must be a string'}), 400
+    if input_data is None:
+        return jsonify({'error': 'Input is required (can be empty string)'}), 400
+    
+    # 2. Validate supported language
+    allowed_languages = ['python', 'cpp', 'java']
+    if language not in allowed_languages:
+        return jsonify({'error': f'Language "{language}" is not supported. Allowed: {", ".join(allowed_languages)}'}), 400
+    
+    # 3. Validate code and input length
+    if len(code) > 100000:  # 100KB max
+        return jsonify({'error': 'Code is too long (max 100KB)'}), 400
+    if len(str(input_data)) > 10000:  # 10KB max input
+        return jsonify({'error': 'Input is too long (max 10KB)'}), 400
+    
+    # ========== END VALIDATION ==========
 
     try:
         problem = session.query(Problem).get(problem_id)
@@ -355,6 +402,10 @@ def create_problem():
     current_user_id = g.user_id
     try:
         data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'Request body is required'}), 400
+        
         title = data.get('title')
         description = data.get('description')
         difficulty = data.get('difficulty')
@@ -366,11 +417,65 @@ def create_problem():
         drivers = data.get('drivers', {})
         time_limits = data.get('time_limits', {})
         
-        if not title or not description or not difficulty:
-             return jsonify({'error': 'Missing required fields'}), 400
+        # ========== DATA CONSISTENCY VALIDATION ==========
+        
+        # 1. Validate required fields
+        if not title or not isinstance(title, str):
+            return jsonify({'error': 'Title is required and must be a string'}), 400
+        if not description or not isinstance(description, str):
+            return jsonify({'error': 'Description is required and must be a string'}), 400
+        if not difficulty or not isinstance(difficulty, str):
+            return jsonify({'error': 'Difficulty is required and must be a string'}), 400
+        
+        # 2. Validate title length
+        if len(title.strip()) < 3:
+            return jsonify({'error': 'Title must be at least 3 characters long'}), 400
+        if len(title) > 255:
+            return jsonify({'error': 'Title must be less than 255 characters'}), 400
+            
+        # 3. Validate title uniqueness
+        existing_problem = session.query(Problem).filter_by(title=title.strip()).first()
+        if existing_problem:
+            return jsonify({'error': f'A problem with title "{title}" already exists'}), 409
+        
+        # 4. Validate allowed difficulty values
+        allowed_difficulties = ['Easy', 'Medium', 'Hard']
+        if difficulty not in allowed_difficulties:
+            return jsonify({'error': f'Difficulty must be one of: {", ".join(allowed_difficulties)}'}), 400
+        
+        # 5. Validate test_cases format
+        if test_cases:
+            if not isinstance(test_cases, list):
+                return jsonify({'error': 'test_cases must be an array'}), 400
+            for i, tc in enumerate(test_cases):
+                if not isinstance(tc, dict):
+                    return jsonify({'error': f'Test case {i+1} must be an object'}), 400
+                if 'input' not in tc or 'output' not in tc:
+                    return jsonify({'error': f'Test case {i+1} must have "input" and "output" fields'}), 400
+        
+        # 6. Validate templates format
+        if templates:
+            if not isinstance(templates, dict):
+                return jsonify({'error': 'templates must be an object'}), 400
+            allowed_languages = ['python', 'cpp', 'java']
+            for lang in templates.keys():
+                if lang not in allowed_languages:
+                    return jsonify({'error': f'Template language "{lang}" is not supported. Allowed: {", ".join(allowed_languages)}'}), 400
+        
+        # 7. Validate time_limits format
+        if time_limits:
+            if not isinstance(time_limits, dict):
+                return jsonify({'error': 'time_limits must be an object'}), 400
+            for lang, limit in time_limits.items():
+                if not isinstance(limit, (int, float)) or limit <= 0:
+                    return jsonify({'error': f'Time limit for {lang} must be a positive number'}), 400
+                if limit > 60:
+                    return jsonify({'error': f'Time limit for {lang} cannot exceed 60 seconds'}), 400
+        
+        # ========== END VALIDATION ==========
 
         new_problem = Problem(
-            title=title,
+            title=title.strip(),
             description=description,
             difficulty=difficulty,
             tags=tags,
@@ -387,7 +492,7 @@ def create_problem():
         # Save to disk
         try:
             problem_data = {
-                'title': title,
+                'title': title.strip(),
                 'description': description,
                 'difficulty': difficulty,
                 'tags': tags,
@@ -422,16 +527,63 @@ def update_problem(problem_id):
         if not problem:
             return jsonify({'error': 'Problem not found'}), 404
             
-        # Check ownership
-        if problem.owner_id != current_user_id:
-             return jsonify({'error': 'Unauthorized'}), 403
+        # Check ownership (admin with id=1 can also update)
+        if problem.owner_id != current_user_id and current_user_id != 1:
+             return jsonify({'error': 'Unauthorized - only owner or admin can update'}), 403
 
         original_title = problem.title
         data = request.get_json()
         
-        if 'title' in data: problem.title = data['title']
+        if not data:
+            return jsonify({'error': 'Request body is required'}), 400
+        
+        # ========== DATA CONSISTENCY VALIDATION ==========
+        
+        # 1. Validate title if provided
+        if 'title' in data:
+            title = data['title']
+            if not title or not isinstance(title, str):
+                return jsonify({'error': 'Title must be a non-empty string'}), 400
+            if len(title.strip()) < 3:
+                return jsonify({'error': 'Title must be at least 3 characters long'}), 400
+            if len(title) > 255:
+                return jsonify({'error': 'Title must be less than 255 characters'}), 400
+            # Check uniqueness only if title changed
+            if title.strip() != original_title:
+                existing = session.query(Problem).filter_by(title=title.strip()).first()
+                if existing and existing.id != problem_id:
+                    return jsonify({'error': f'A problem with title "{title}" already exists'}), 409
+            problem.title = title.strip()
+        
+        # 2. Validate difficulty if provided
+        if 'difficulty' in data:
+            difficulty = data['difficulty']
+            allowed_difficulties = ['Easy', 'Medium', 'Hard']
+            if difficulty not in allowed_difficulties:
+                return jsonify({'error': f'Difficulty must be one of: {", ".join(allowed_difficulties)}'}), 400
+            problem.difficulty = difficulty
+        
+        # 3. Validate test_cases if provided
+        if 'test_cases' in data:
+            test_cases = data['test_cases']
+            if test_cases and not isinstance(test_cases, list):
+                return jsonify({'error': 'test_cases must be an array'}), 400
+            for i, tc in enumerate(test_cases or []):
+                if not isinstance(tc, dict) or 'input' not in tc or 'output' not in tc:
+                    return jsonify({'error': f'Test case {i+1} must have "input" and "output" fields'}), 400
+        
+        # 4. Validate time_limits if provided
+        if 'time_limits' in data:
+            time_limits = data['time_limits']
+            if time_limits and not isinstance(time_limits, dict):
+                return jsonify({'error': 'time_limits must be an object'}), 400
+            for lang, limit in (time_limits or {}).items():
+                if not isinstance(limit, (int, float)) or limit <= 0 or limit > 60:
+                    return jsonify({'error': f'Time limit for {lang} must be a positive number (max 60s)'}), 400
+        
+        # ========== END VALIDATION ==========
+        
         if 'description' in data: problem.description = data['description']
-        if 'difficulty' in data: problem.difficulty = data['difficulty']
         if 'tags' in data: problem.tags = data['tags']
         
         test_cases_obj = []
@@ -505,9 +657,12 @@ def delete_problem(problem_id):
             
         # Allow admin (id=1) or problem owner to delete
         if problem.owner_id != current_user_id and current_user_id != 1:
-             return jsonify({'error': 'Unauthorized'}), 403
+             return jsonify({'error': 'Unauthorized - only owner or admin can delete'}), 403
 
         title = problem.title
+        
+        # Count submissions that will be deleted (for response info)
+        submissions_count = session.query(Submission).filter_by(problem_id=problem_id).count()
         
         # Delete submissions first (foreign key constraint usually handles this if cascading, but let's be safe)
         session.query(Submission).filter_by(problem_id=problem_id).delete()
@@ -521,7 +676,11 @@ def delete_problem(problem_id):
         except Exception as e:
             print(f"Error deleting problem from disk: {e}")
 
-        return jsonify({'message': 'Problem deleted'}), 200
+        return jsonify({
+            'message': 'Problem deleted successfully',
+            'deleted_problem': title,
+            'deleted_submissions_count': submissions_count
+        }), 200
     except Exception as e:
         session.rollback()
         import traceback

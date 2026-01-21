@@ -8,7 +8,7 @@ A full-stack coding platform inspired by LeetCode, built with React, Flask, Post
 - Docker & Docker Compose installed
 - Ports available: 3000, 5001, 5433, 6379, 8081, 8888
 
-### Installation & Running
+### Installation & Running (Docker Compose - Development)
 
 1. **Clone the repository**
    ```bash
@@ -20,6 +20,19 @@ A full-stack coding platform inspired by LeetCode, built with React, Flask, Post
    ```bash
    docker-compose up -d
    ```
+   
+   **Expected Output:**
+   ```
+   Creating network "scd-leetcode_default" with the default driver
+   Creating scd-leetcode_redis_1    ... done
+   Creating scd-leetcode_db_1       ... done
+   Creating scd-leetcode_traefik_1  ... done
+   Creating scd-leetcode_keycloak_1 ... done
+   Creating scd-leetcode_server_1   ... done
+   Creating scd-leetcode_runner_1   ... done
+   Creating scd-leetcode_runner_2   ... done
+   Creating scd-leetcode_client_1   ... done
+   ```
 
 3. **Initialize Keycloak and Problems** (first time only)
    ```bash
@@ -27,12 +40,198 @@ A full-stack coding platform inspired by LeetCode, built with React, Flask, Post
    docker-compose exec server python init_keycloak.py
    docker-compose exec server python init_problems.py
    ```
+   
+   **Expected Output (init_keycloak.py):**
+   ```
+   Initializing Keycloak...
+   Creating realm 'scd-leetcode'...
+   Creating client 'scd-leetcode-client'...
+   Creating user 'admin'...
+   Creating user 'student'...
+   Creating user 'denis'...
+   Keycloak initialization complete!
+   ```
 
-4. **Access the application**
+4. **Verify services are running**
+   ```bash
+   docker-compose ps
+   ```
+   
+   **Expected Output:**
+   ```
+            Name                        Command               State                        Ports
+   -------------------------------------------------------------------------------------------------------------------
+   scd-leetcode_client_1     docker-entrypoint.sh npm start   Up      0.0.0.0:3000->3000/tcp
+   scd-leetcode_db_1         docker-entrypoint.sh postgres    Up      0.0.0.0:5433->5432/tcp
+   scd-leetcode_keycloak_1   /opt/keycloak/bin/kc.sh st ...   Up      0.0.0.0:8081->8080/tcp
+   scd-leetcode_redis_1      docker-entrypoint.sh redis ...   Up      0.0.0.0:6379->6379/tcp
+   scd-leetcode_runner_1     python app.py                    Up      5000/tcp
+   scd-leetcode_runner_2     python app.py                    Up      5000/tcp
+   scd-leetcode_server_1     python run.py                    Up      0.0.0.0:5001->5001/tcp
+   scd-leetcode_traefik_1    /entrypoint.sh --api.insec ...   Up      0.0.0.0:80->80/tcp, 0.0.0.0:8888->8080/tcp
+   ```
+
+5. **Access the application**
    - **Frontend**: http://localhost:3000
    - **API**: http://localhost:5001
-   - **Keycloak**: http://localhost:8081
+   - **Keycloak Admin**: http://localhost:8081 (admin/admin)
    - **Traefik Dashboard**: http://localhost:8888
+
+### Stopping the Application (Docker Compose)
+
+```bash
+# Stop all services (keeps data)
+docker-compose down
+```
+
+**Expected Output:**
+```
+Stopping scd-leetcode_client_1   ... done
+Stopping scd-leetcode_runner_2   ... done
+Stopping scd-leetcode_runner_1   ... done
+Stopping scd-leetcode_server_1   ... done
+Stopping scd-leetcode_keycloak_1 ... done
+Stopping scd-leetcode_traefik_1  ... done
+Stopping scd-leetcode_db_1       ... done
+Stopping scd-leetcode_redis_1    ... done
+Removing scd-leetcode_client_1   ... done
+Removing scd-leetcode_runner_2   ... done
+Removing scd-leetcode_runner_1   ... done
+Removing scd-leetcode_server_1   ... done
+Removing scd-leetcode_keycloak_1 ... done
+Removing scd-leetcode_traefik_1  ... done
+Removing scd-leetcode_db_1       ... done
+Removing scd-leetcode_redis_1    ... done
+Removing network scd-leetcode_default
+```
+
+```bash
+# Stop and DELETE ALL DATA (removes volumes)
+docker-compose down -v
+```
+
+---
+
+## Docker Swarm Deployment (Production)
+
+### Prerequisites
+- Docker with Swarm mode enabled
+- Images built locally or available in registry
+
+### Starting the Swarm Stack
+
+1. **Initialize Docker Swarm** (if not already done)
+   ```bash
+   docker swarm init
+   ```
+   
+   **Expected Output:**
+   ```
+   Swarm initialized: current node (xxxxx) is now a manager.
+   To add a worker to this swarm, run the following command:
+       docker swarm join --token SWMTKN-1-xxxxx <ip>:2377
+   ```
+
+2. **Build the images** (if not already built)
+   ```bash
+   docker-compose build
+   ```
+
+3. **Deploy the stack**
+   ```bash
+   docker stack deploy -c docker-stack.yml leetcode
+   ```
+   
+   **Expected Output:**
+   ```
+   Creating network leetcode_leetcode-network
+   Creating service leetcode_traefik
+   Creating service leetcode_redis
+   Creating service leetcode_db
+   Creating service leetcode_server
+   Creating service leetcode_runner
+   Creating service leetcode_keycloak
+   Creating service leetcode_client
+   ```
+
+4. **Create keycloak database** (first time only)
+   ```bash
+   # Find the db container
+   docker ps --filter name=leetcode_db
+   
+   # Create keycloak database
+   docker exec <db_container_id> psql -U user -d leetcode_db -c "CREATE DATABASE keycloak"
+   
+   # Restart keycloak to pick up the new database
+   docker service update --force leetcode_keycloak
+   ```
+
+5. **Check service status**
+   ```bash
+   docker stack services leetcode
+   ```
+   
+   **Expected Output:**
+   ```
+   ID             NAME                MODE         REPLICAS   IMAGE                              PORTS
+   xxxxx          leetcode_client     replicated   1/1        scd-leetcode_client:latest
+   xxxxx          leetcode_db         replicated   1/1        postgres:13
+   xxxxx          leetcode_keycloak   replicated   1/1        quay.io/keycloak/keycloak:23.0.0   *:8081->8080/tcp
+   xxxxx          leetcode_redis      replicated   1/1        redis:7-alpine
+   xxxxx          leetcode_runner     replicated   3/3        scd-leetcode_runner:latest
+   xxxxx          leetcode_server     replicated   1/1        scd-leetcode_server:latest
+   xxxxx          leetcode_traefik    replicated   1/1        traefik:v2.10                      *:80->80/tcp, *:8888->8080/tcp
+   ```
+
+6. **Initialize Keycloak** (first time only)
+   ```bash
+   docker exec $(docker ps -q -f name=leetcode_server) python init_keycloak.py
+   docker exec $(docker ps -q -f name=leetcode_server) python init_problems.py
+   ```
+
+### Stopping the Swarm Stack
+
+```bash
+docker stack rm leetcode
+```
+
+**Expected Output:**
+```
+Removing service leetcode_client
+Removing service leetcode_db
+Removing service leetcode_keycloak
+Removing service leetcode_redis
+Removing service leetcode_runner
+Removing service leetcode_server
+Removing service leetcode_traefik
+Removing network leetcode_leetcode-network
+```
+
+### Scaling Services in Swarm
+
+```bash
+# Scale runner workers to 5 instances
+docker service scale leetcode_runner=5
+
+# Expected Output:
+# leetcode_runner scaled to 5
+# overall progress: 5 out of 5 tasks
+
+# Check scaling
+docker service ls
+```
+
+### Viewing Swarm Logs
+
+```bash
+# View logs for a specific service
+docker service logs leetcode_server --tail 50
+
+# Follow logs in real-time
+docker service logs -f leetcode_runner
+```
+
+---
 
 ### Default Users
 
@@ -315,14 +514,53 @@ scd-leetcode/
 docker-compose exec server python sync_problems.py --status
 ```
 
+**Expected Output:**
+```
+=== Problem Sync Status ===
+Problems in database: 5
+Problems on disk: 5
+
+Database problems:
+  - Two Sum (ID: 1)
+  - Sum of Two Numbers (ID: 2)
+  - Added Problem (ID: 3)
+  - Sum of Three Numbers (ID: 4)
+  - Noua problema (ID: 7)
+
+Disk problems:
+  - two_sum
+  - sum_of_two_numbers
+  - added_problem
+  - sum_of_three_numbers
+  - noua_problema
+```
+
 #### Export Problems from DB to Files
 ```bash
 docker-compose exec server python sync_problems.py --db-to-files
 ```
 
+**Expected Output:**
+```
+Exporting problems from database to files...
+Exported: Two Sum -> two_sum/
+Exported: Sum of Two Numbers -> sum_of_two_numbers/
+...
+Export complete! 5 problems exported.
+```
+
 #### Import Problems from Files to DB
 ```bash
 docker-compose exec server python sync_problems.py --files-to-db
+```
+
+**Expected Output:**
+```
+Importing problems from files to database...
+Imported: two_sum -> Two Sum (ID: 1)
+Imported: sum_of_two_numbers -> Sum of Two Numbers (ID: 2)
+...
+Import complete! 5 problems imported.
 ```
 
 See [SYNC_PROBLEMS.md](SYNC_PROBLEMS.md) for detailed documentation.
@@ -332,14 +570,27 @@ See [SYNC_PROBLEMS.md](SYNC_PROBLEMS.md) for detailed documentation.
 ```bash
 # All services
 docker-compose logs -f
+```
 
+```bash
 # Specific service
 docker-compose logs -f server
 docker-compose logs -f runner
 docker-compose logs -f client
+```
 
+```bash
 # Last N lines
 docker-compose logs --tail=50 server
+```
+
+**Expected Output (server logs):**
+```
+server_1   |  * Serving Flask app 'app'
+server_1   |  * Debug mode: on
+server_1   |  * Running on all addresses (0.0.0.0)
+server_1   |  * Running on http://127.0.0.1:5001
+server_1   | 2026-01-21 10:00:00,123 - INFO - Processing submission for problem 1
 ```
 
 ### Restarting Services
@@ -347,10 +598,28 @@ docker-compose logs --tail=50 server
 ```bash
 # All services
 docker-compose restart
+```
 
+**Expected Output:**
+```
+Restarting scd-leetcode_client_1   ... done
+Restarting scd-leetcode_runner_2   ... done
+Restarting scd-leetcode_runner_1   ... done
+Restarting scd-leetcode_server_1   ... done
+Restarting scd-leetcode_keycloak_1 ... done
+Restarting scd-leetcode_traefik_1  ... done
+Restarting scd-leetcode_db_1       ... done
+Restarting scd-leetcode_redis_1    ... done
+```
+
+```bash
 # Specific service
 docker-compose restart server
-docker-compose restart client
+```
+
+**Expected Output:**
+```
+Restarting scd-leetcode_server_1 ... done
 ```
 
 ### Scaling Workers
@@ -358,7 +627,18 @@ docker-compose restart client
 ```bash
 # Scale runner workers to 4 instances
 docker-compose up -d --scale runner=4
+```
 
+**Expected Output:**
+```
+scd-leetcode_db_1 is up-to-date
+scd-leetcode_redis_1 is up-to-date
+scd-leetcode_traefik_1 is up-to-date
+Creating scd-leetcode_runner_3 ... done
+Creating scd-leetcode_runner_4 ... done
+```
+
+```bash
 # Scale back to 2
 docker-compose up -d --scale runner=2
 ```
@@ -368,7 +648,17 @@ docker-compose up -d --scale runner=2
 ```bash
 # Connect to PostgreSQL
 docker-compose exec db psql -U user -d leetcode_db
+```
 
+**Expected Output:**
+```
+psql (13.x)
+Type "help" for help.
+
+leetcode_db=#
+```
+
+```bash
 # Common queries
 \dt                          # List tables
 SELECT * FROM users;
@@ -376,12 +666,25 @@ SELECT * FROM problems;
 SELECT * FROM submissions;
 ```
 
+**Example \dt output:**
+```
+           List of relations
+ Schema |    Name     | Type  | Owner
+--------+-------------+-------+-------
+ public | problems    | table | user
+ public | submissions | table | user
+ public | users       | table | user
+(3 rows)
+```
+
 ### Stopping the Application
 
 ```bash
 # Stop all services
 docker-compose down
+```
 
+```bash
 # Stop and remove volumes (deletes all data)
 docker-compose down -v
 ```

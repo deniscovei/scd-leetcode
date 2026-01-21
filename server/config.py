@@ -6,8 +6,8 @@ DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(BAS
 SECRET_KEY = 'super-secret-key-fixed'
 
 # Internal URL for container-to-container communication
-# Using host.docker.internal to match the Frontend URL (localhost:8081) and avoid issuer mismatch
-KEYCLOAK_SERVER_URL = os.environ.get('KEYCLOAK_SERVER_URL', 'http://host.docker.internal:8081/')
+# Use keycloak:8080 for internal Docker network communication
+KEYCLOAK_SERVER_URL = os.environ.get('KEYCLOAK_SERVER_URL', 'http://keycloak:8080/')
 KEYCLOAK_REALM_NAME = os.environ.get('KEYCLOAK_REALM_NAME', 'scd-leetcode')
 KEYCLOAK_CLIENT_ID = os.environ.get('KEYCLOAK_CLIENT_ID', 'scd-leetcode-backend')
 KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'JCiTPUB5yrOHR8ftvRHuU6tn7qhDiBta')

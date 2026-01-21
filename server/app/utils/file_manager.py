@@ -25,10 +25,6 @@ def save_problem_to_disk(problem_data, original_title=None):
              if not os.path.exists(problem_path):
                 os.rename(old_path, problem_path)
              else:
-                # If destination exists (e.g. "Two Sum" renaming to existing "Three Sum"), 
-                # strictly speaking we should fail or merge. For now let's just use the new path 
-                # and maybe leave the old one or overwrite? 
-                # Let's simple rename logic: only rename if target doesn't exist.
                 pass
 
     if not os.path.exists(problem_path):
