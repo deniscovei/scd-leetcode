@@ -1,0 +1,16 @@
+docker stack rm leetcode
+docker stack services leetcode
+docker-compose build
+docker stack deploy -c docker-stack.yml leetcode
+docker stack services leetcode
+
+
+
+
+
+
+
+docker-compose down
+docker-compose ps 
+docker stack deploy -c docker-stack.yml leetcode
+docker stack services leetcode

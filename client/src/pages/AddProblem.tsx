@@ -139,10 +139,10 @@ const AddProblem: React.FC = () => {
                 description,
                 difficulty,
                 tags,
-                test_cases: JSON.stringify(testCases.map(({input, output}) => ({input, output}))),
-                drivers: JSON.stringify(drivers),
-                templates: JSON.stringify(templates),
-                time_limits: JSON.stringify(timeLimits)
+                test_cases: testCases.map(({input, output}) => ({input, output})),
+                drivers: drivers,
+                templates: templates,
+                time_limits: timeLimits
             };
 
             if (isEditMode) {

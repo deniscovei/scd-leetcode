@@ -107,7 +107,7 @@ def execute_code_logic(language: str, code: str, input_data: str, timeout: float
                 success = False
 
         elif language == 'java':
-            file_path = os.path.join(temp_dir, "Solution.java")
+            file_path = os.path.join(temp_dir, "Driver.java")
             
             with open(file_path, 'w') as f:
                 f.write(code)

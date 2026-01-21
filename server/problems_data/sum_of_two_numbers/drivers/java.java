@@ -1,4 +1,4 @@
-class Driver {
+public class Driver {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         if (scanner.hasNextLine()) {
