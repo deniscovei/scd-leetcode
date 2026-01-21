@@ -1,0 +1,10 @@
+{
+    "title": "Problema lui user",
+    "difficulty": "Hard",
+    "tags": "",
+    "time_limits": {
+        "python": 2,
+        "cpp": 1,
+        "java": 2
+    }
+}

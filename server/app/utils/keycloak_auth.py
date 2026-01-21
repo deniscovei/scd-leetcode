@@ -72,13 +72,40 @@ def token_required(f):
             return jsonify({'message': 'Token is missing'}), 401
             
         try:
-            # Verify token using introspection endpoint
-            token_info = keycloak_openid.introspect(token)
-
-            if not token_info.get('active'):
-                 return jsonify({'message': 'Token is expired or invalid'}), 401
-                 
-            # Sync user with local DB
+            # Decode and verify JWT token directly (works with public client tokens)
+            # Get public key from Keycloak
+            import jwt
+            
+            KEYCLOAK_PUBLIC_KEY = (
+                "-----BEGIN PUBLIC KEY-----\n"
+                + keycloak_openid.public_key()
+                + "\n-----END PUBLIC KEY-----"
+            )
+            
+            options = {
+                "verify_signature": True,
+                "verify_aud": False,  # Public clients don't have audience
+                "verify_iat": True,
+                "verify_exp": True,
+                "verify_nbf": True,
+                "verify_iss": True,
+                "verify_sub": True,
+                "verify_jti": True,
+                "verify_at_hash": True,
+                "require_iat": False,
+                "require_exp": True,
+                "require_nbf": False
+            }
+            
+            token_info = jwt.decode(
+                token,
+                KEYCLOAK_PUBLIC_KEY,
+                algorithms=["RS256"],
+                options=options,
+                audience=None  # Public client doesn't validate audience
+            )
+            
+            # Extract user info from decoded token
             username = token_info.get('preferred_username')
             if not username:
                  username = token_info.get('sub') # Fallback to sub
@@ -103,6 +130,11 @@ def token_required(f):
             finally:
                 session.close()
                 
+        except jwt.ExpiredSignatureError:
+            return jsonify({'message': 'Token has expired'}), 401
+        except jwt.InvalidTokenError as e:
+            print(f"Invalid token: {e}", file=sys.stderr)
+            return jsonify({'message': 'Invalid token'}), 401
         except Exception as e:
             print(f"Keycloak Auth Error: {e}", file=sys.stderr)
             import traceback

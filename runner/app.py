@@ -114,17 +114,20 @@ def execute_code_logic(language: str, code: str, input_data: str, timeout: float
             
             try:
                 # Compile
+                print(f"[{WORKER_ID}] Compiling Java code...", flush=True)
                 compile_process = subprocess.Popen(['javac', file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 c_out, c_err = compile_process.communicate(timeout=10)
                 
                 if compile_process.returncode != 0:
                     success = False
                     error = "Compilation Error:\n" + c_err
+                    print(f"[{WORKER_ID}] Compilation failed: {c_err}", flush=True)
                 else:
-                    # Run
-                    # -cp temp_dir Solution
+                    # Run - execute Driver class which contains the main method
+                    # The code should contain both Solution and Driver classes
+                    print(f"[{WORKER_ID}] Running Java Driver class...", flush=True)
                     run_process = subprocess.Popen(
-                        ['java', '-cp', temp_dir, 'Solution'], 
+                        ['java', '-cp', temp_dir, 'Driver'], 
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE, 
                         stderr=subprocess.PIPE, 
@@ -136,12 +139,15 @@ def execute_code_logic(language: str, code: str, input_data: str, timeout: float
                     if run_process.returncode != 0:
                         success = False
                         error = stderr or "Runtime Error"
+                        print(f"[{WORKER_ID}] Runtime error: {stderr}", flush=True)
                     else:
                         success = True
                         error = stderr
+                        print(f"[{WORKER_ID}] Java execution successful", flush=True)
             except subprocess.TimeoutExpired:
                 error = "Time Limit Exceeded"
                 success = False
+                print(f"[{WORKER_ID}] Java execution timeout", flush=True)
         else:
             return {'success': False, 'error': f"Unsupported language: {language}", 'output': ''}
 

@@ -38,11 +38,6 @@ const MyProblems: React.FC = () => {
         }
     };
     
-    // Check if user is admin - very basic check, ideally roles should be used.
-    // However, backend filters correctly, so we just display what we get.
-    // If admin, this list will contain ALL problems.
-    // If user, only theirs.
-    
     const isAdmin = keycloak.tokenParsed?.preferred_username === 'admin';
     const title = isAdmin ? "All Problems (Admin View)" : "My Problems";
 

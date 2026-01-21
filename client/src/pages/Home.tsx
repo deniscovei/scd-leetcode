@@ -21,7 +21,6 @@ const Home: React.FC = () => {
 
     const userId = keycloak.tokenParsed?.sub;
     const username = keycloak.tokenParsed?.preferred_username;
-    // VERY Basic admin check - in real app check roles
     const isAdmin = username === 'admin';
 
     const handleDelete = async (problemId: number, problemTitle: string) => {
@@ -56,15 +55,6 @@ const Home: React.FC = () => {
                     <tbody>
                         {problems.map((p, index) => {
                             const showEdit = isAdmin || (typeof p.owner_id === 'number' && typeof userId === 'string' && 
-                                // Need to check how ids are returned (often keycloak 'sub' is UUID string, but database might use integer IDs)
-                                // In this app: User table uses integer ID. 
-                                // Problem.owner_id is integer.
-                                // But 'userId' from keycloak 'sub' is UUID string.
-                                // We cannot easily match them without storing keycloak ID in DB or fetching current user integer ID.
-                                // Wait, the Auth logic in backend maps keycloak 'sub' to 'User' via 'username'.
-                                // We don't have the integer user ID in the frontend easily unless we fetch '/auth/me' or similar.
-                                // BUT: 'admin' username check is reliable for admin.
-                                // For regular user, we can check p.owner_username == username
                                 p.owner_username === username
                             );
                             

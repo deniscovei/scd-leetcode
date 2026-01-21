@@ -66,10 +66,13 @@ The application runs 8 Docker containers orchestrated by Docker Compose:
 #### 3. **db** (PostgreSQL Database)
 - **Image**: `postgres:13`
 - **Port**: 5433 (mapped from 5432)
-- **Purpose**: Stores users, problems, submissions
+- **Purpose**: Stores users, problems, submissions (in `leetcode_db`) and Keycloak data (in `keycloak` database)
 - **Credentials**: user/password
-- **Databases**: `leetcode_db`, `keycloak`
+- **Databases**: 
+  - `leetcode_db` - Application data (users, problems, submissions)
+  - `keycloak` - Keycloak authentication data
 - **Data**: Persisted in `./data/db`
+- **Init Script**: `./init-db.sh` automatically creates both databases on first run
 
 #### 4. **server** (Flask Backend API)
 - **Build**: `./server/Dockerfile`
@@ -451,6 +454,54 @@ docker-compose logs keycloak
 # Access Keycloak admin console
 # http://localhost:8081 (admin/admin)
 ```
+
+### Missing Keycloak Database
+```bash
+# If Keycloak fails with "database keycloak does not exist":
+# 1. Create the database manually
+docker-compose exec db psql -U user -d leetcode_db -c "CREATE DATABASE keycloak;"
+
+# 2. Restart Keycloak
+docker-compose restart keycloak
+
+# 3. Initialize Keycloak realm and users
+docker-compose exec server python init_keycloak.py
+```
+
+### Data Not Persisting
+If your submissions or user data disappear after restart:
+
+```bash
+# Check if data directory exists and has correct permissions
+ls -la ./data/db
+
+# Verify database volumes are mounted correctly
+docker-compose exec db psql -U user -d leetcode_db -c "\l"
+
+# Check if databases exist
+docker-compose exec db psql -U user -d leetcode_db -c "SELECT datname FROM pg_database;"
+
+# If data was lost, you may need to:
+# 1. Stop all services
+docker-compose down
+
+# 2. Backup any important data from ./data/db if it exists
+
+# 3. Remove old data (THIS WILL DELETE ALL DATA)
+sudo rm -rf ./data/db/*
+
+# 4. Start fresh with automatic database creation
+docker-compose up -d
+
+# 5. Wait for services to start (30 seconds)
+sleep 30
+
+# 6. Initialize Keycloak and problems
+docker-compose exec server python init_keycloak.py
+docker-compose exec server python init_problems.py
+```
+
+**Note**: Users are automatically created in the PostgreSQL database when they first log in through Keycloak. The system syncs Keycloak users to the local database on their first authentication.
 
 ### Code Execution Failing
 ```bash

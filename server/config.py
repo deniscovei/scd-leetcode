@@ -10,4 +10,4 @@ SECRET_KEY = 'super-secret-key-fixed'
 KEYCLOAK_SERVER_URL = os.environ.get('KEYCLOAK_SERVER_URL', 'http://host.docker.internal:8081/')
 KEYCLOAK_REALM_NAME = os.environ.get('KEYCLOAK_REALM_NAME', 'scd-leetcode')
 KEYCLOAK_CLIENT_ID = os.environ.get('KEYCLOAK_CLIENT_ID', 'scd-leetcode-backend')
-KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'J0j1tbTScYVCWBV8epMUsW6NH55HjxWH')
+KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'JCiTPUB5yrOHR8ftvRHuU6tn7qhDiBta')
